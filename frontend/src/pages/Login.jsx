@@ -3,7 +3,6 @@ import { api, setToken } from "../lib/api";
 
 export default function Login() {
   const params = new URLSearchParams(location.search);
-  const required = params.get("required");
   const next = params.get("next") || "/dashboard";
 
   const [mobile, setMobile] = useState("");
@@ -80,13 +79,6 @@ export default function Login() {
               : "Enter the OTP sent to your mobile"}
           </p>
         </div>
-
-        {/* Required notice */}
-        {required && (
-          <div className="mb-4 p-3 rounded-lg text-sm text-center font-medium bg-orange-50 text-orange-700 border border-orange-200">
-            Please register or login first to continue.
-          </div>
-        )}
 
         {/* Message */}
         {message && (

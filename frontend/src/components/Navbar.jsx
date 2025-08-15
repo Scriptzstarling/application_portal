@@ -1,21 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, getToken } from '../lib/api';
 
 export default function Navbar() {
-  const [me, setMe] = useState(null);
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      setMe(null);
-      return;
-    }
-    api('/auth/me', { headers: { Authorization: `Bearer ${token}` } })
-      .then(setMe)
-      .catch(() => setMe(null));
-  }, []);
 
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 py-3">
@@ -31,11 +18,6 @@ export default function Navbar() {
           <Link className="text-gray-700 hover:text-blue-700 transition" to="/">Register</Link>
           <Link className="text-gray-700 hover:text-blue-700 transition" to="/login">Login</Link>
           <Link className="text-gray-700 hover:text-blue-700 transition" to="/dashboard">Dashboard</Link>
-          {me && (
-            <div className="text-sm text-gray-700">
-              Logged in as: <strong>{me.username || me.mobile}</strong>
-            </div>
-          )}
         </div>
 
         {/* Mobile menu button */}
@@ -58,11 +40,6 @@ export default function Navbar() {
             <Link className="text-gray-700 hover:text-blue-700 transition" to="/login" onClick={() => setOpen(false)}>Login</Link>
             <Link className="text-gray-700 hover:text-blue-700 transition" to="/dashboard" onClick={() => setOpen(false)}>Dashboard</Link>
           </div>
-          {me && (
-            <div className="text-sm pt-2">
-              Logged in as: <strong>{me.username || me.mobile}</strong>
-            </div>
-          )}
         </div>
       )}
     </nav>

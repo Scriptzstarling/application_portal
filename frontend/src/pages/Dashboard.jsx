@@ -11,7 +11,6 @@ const steps = [
 
 export default function Dashboard() {
   const [step, setstep] = useState(0);
-  const [applications, setApplications] = useState([]);
   const [me, setMe] = useState(null);
   const [message, setMessage] = useState("");
 
@@ -61,7 +60,6 @@ export default function Dashboard() {
       return;
     }
     loadMe();
-    loadApplications();
   }, []);
 
   async function loadMe() {
@@ -72,17 +70,6 @@ export default function Dashboard() {
       setMe(res);
     } catch (e) {
       setMessage(e.message || "Failed to load user");
-    }
-  }
-
-  async function loadApplications() {
-    try {
-      const list = await api("/applications", {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      setApplications(list || []);
-    } catch (e) {
-      setMessage(e.message || "Failed to load applications");
     }
   }
 
@@ -167,6 +154,48 @@ export default function Dashboard() {
     return "";
   }
 
+  function resetForm() {
+    setForm({
+      applicantName: "",
+      fatherName: "",
+      motherName: "",
+      dob: "",
+      religion: "",
+      gender: "",
+      handicapped: "",
+      disabilityDegree: "",
+
+      aadhar: "",
+      income: "",
+      nationality: "",
+      maritalStatus: "",
+      incomeCert: null,
+
+      email: "",
+      mobile: "",
+      telephone: "",
+      domicileBihar: "",
+      residentialCert: null,
+      district: "",
+      address: "",
+      permanentAddress: "",
+
+      choiceDistrict: "",
+      jobRoleChoice: "",
+      qualification: "",
+      marksheet: null,
+      previousTraining: "",
+      previousTrainingDetails: "",
+
+      signature: null,
+      photo: null,
+      selfDeclaration: false,
+      place: "",
+      date: "",
+    });
+    setstep(0);
+  }
+
   async function submitApplication(e) {
     e.preventDefault();
     setMessage("");
@@ -191,8 +220,8 @@ export default function Dashboard() {
         body: formData,
       });
 
-      setMessage("Application submitted successfully.");
-      loadApplications();
+      setMessage("Your application has been submitted successfully!");
+      resetForm();
     } catch (e) {
       if (e.response) {
         setMessage(`Submission failed: ${e.response.message || e.response.error || e.message}`);
@@ -211,7 +240,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-4">
             {me && (
               <div className="text-sm text-gray-700">
-                Logged in as: <strong>{me.username || me.mobile}</strong>
+                Logged in as: <strong>{me.mobile}</strong>
               </div>
             )}
             <button
@@ -256,25 +285,11 @@ export default function Dashboard() {
           onSubmit={submitApplication}
           className="space-y-6 border border-gray-200 rounded-2xl p-4 sm:p-6 bg-gray-50"
         >
-          {renderStep(step, form, handleChange, me, steps, nextStep, prevStep, submitApplication, applications, message)}
+          {renderStep(step, form, handleChange, me, steps, nextStep, prevStep, submitApplication)}
         </form>
 
-        <div className="mt-10">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">My Applications</h3>
-          <ul className="space-y-2">
-            {applications.map((a) => (
-              <li
-                key={a.id}
-                className="p-3 border border-gray-200 rounded-lg bg-white shadow-sm"
-              >
-                <div className="font-semibold text-gray-800">{a.applicant_name}</div>
-                <div className="text-xs text-gray-500">
-                  {a.created_at ? new Date(a.created_at).toLocaleString() : ""}
-                </div>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4 text-xs text-gray-500">Helpdesk: 0612224975</div>
+        <div className="mt-10 text-center">
+          <div className="text-xs text-gray-500">Helpdesk: 0612224975</div>
         </div>
       </div>
     </div>
@@ -282,7 +297,7 @@ export default function Dashboard() {
 }
 
 /* ---------- Step Renderer ---------- */
-function renderStep(step, form, handleChange, me, steps, nextStep, prevStep, submitApplication, applications, message) {
+function renderStep(step, form, handleChange, me, steps, nextStep, prevStep, submitApplication) {
   return (
         <div>
       {/* STEP 0 — Personal Information */}
