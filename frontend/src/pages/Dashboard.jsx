@@ -55,14 +55,15 @@ export default function Dashboard() {
 
   useEffect(() => {
     const token = getToken();
-    if (!token) {
-      window.location.href = "/login";
-      return;
+    if (token) {
+      loadMe();
     }
-    loadMe();
   }, []);
 
   async function loadMe() {
+    const token = getToken();
+    if (!token) return;
+    
     try {
       const res = await api("/auth/me", {
         headers: { Authorization: `Bearer ${getToken()}` },
@@ -206,6 +207,12 @@ export default function Dashboard() {
       return;
     }
 
+    const token = getToken();
+    if (!token) {
+      setMessage("Please login to submit application.");
+      return;
+    }
+
     try {
       const formData = new FormData();
       Object.entries(form).forEach(([k, v]) => {
@@ -216,7 +223,7 @@ export default function Dashboard() {
 
       const response = await api("/applications", {
         method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
@@ -243,12 +250,21 @@ export default function Dashboard() {
                 Logged in as: <strong>{me.mobile}</strong>
               </div>
             )}
-            <button
-              onClick={logout}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all duration-200"
-            >
-              Logout
-            </button>
+            {getToken() ? (
+              <button
+                onClick={logout}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all duration-200"
+              >
+                Logout
+              </button>
+            ) : (
+              <button
+                onClick={() => window.location.href = "/login"}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all duration-200"
+              >
+                Login
+              </button>
+            )}
           </div>
         </div>
 
