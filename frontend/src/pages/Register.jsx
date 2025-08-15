@@ -7,7 +7,7 @@ export default function Register() {
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState("enterMobile");
   const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("error"); // "error" or "success"
+  const [messageType, setMessageType] = useState("error"); 
 
   async function sendOtp(e) {
     e.preventDefault();

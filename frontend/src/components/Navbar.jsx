@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, getToken, clearToken } from '../lib/api';
+import { api, getToken } from '../lib/api';
 
 export default function Navbar() {
   const [me, setMe] = useState(null);
@@ -17,32 +17,27 @@ export default function Navbar() {
       .catch(() => setMe(null));
   }, []);
 
-  function logout() {
-    clearToken();
-    window.location.href = '/login';
-  }
-
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 py-3">
       <div className="flex items-center justify-between">
-        {/* Brand */}
-        <div className="font-semibold text-lg text-gray-900">OTP App Portal</div>
+        {/* Brand Title */}
+        <div className="font-semibold text-lg text-gray-900 leading-tight">
+          Mukhyamantri Shram Shakti Yojna <br className="hidden sm:block" />
+          <span className="text-sm text-gray-600">(मुख्यमंत्री श्रम शक्ति योजना) – Training Application Portal</span>
+        </div>
+
         {/* Right cluster on desktop */}
         <div className="hidden sm:flex items-center gap-6 text-sm font-medium">
           <Link className="text-gray-700 hover:text-blue-700 transition" to="/">Register</Link>
           <Link className="text-gray-700 hover:text-blue-700 transition" to="/login">Login</Link>
           <Link className="text-gray-700 hover:text-blue-700 transition" to="/dashboard">Dashboard</Link>
-          <div className="text-sm">
-            {me ? (
-              <span className="flex items-center gap-3">
-                Hi, <span className="font-medium text-gray-900">{me.username || me.mobile}</span>
-                <button onClick={logout} className="bg-blue-900 hover:bg-blue-800 text-white px-3 py-1 rounded-lg transition">Logout</button>
-              </span>
-            ) : (
-              <span className="opacity-70 text-gray-500">Not signed in</span>
-            )}
-          </div>
+          {me && (
+            <div className="text-sm text-gray-700">
+              Logged in as: <strong>{me.username || me.mobile}</strong>
+            </div>
+          )}
         </div>
+
         {/* Mobile menu button */}
         <button
           className="sm:hidden inline-flex items-center justify-center rounded-md p-2 text-gray-600 hover:bg-gray-100 focus:outline-none"
@@ -54,6 +49,7 @@ export default function Navbar() {
           </svg>
         </button>
       </div>
+
       {/* Mobile dropdown */}
       {open && (
         <div className="sm:hidden mt-3 border-t border-gray-200 pt-3 space-y-3">
@@ -62,16 +58,11 @@ export default function Navbar() {
             <Link className="text-gray-700 hover:text-blue-700 transition" to="/login" onClick={() => setOpen(false)}>Login</Link>
             <Link className="text-gray-700 hover:text-blue-700 transition" to="/dashboard" onClick={() => setOpen(false)}>Dashboard</Link>
           </div>
-          <div className="text-sm pt-2">
-            {me ? (
-              <div className="flex items-center justify-between">
-                <span>Hi, <span className="font-medium text-gray-900">{me.username || me.mobile}</span></span>
-                <button onClick={logout} className="bg-blue-900 hover:bg-blue-800 text-white px-3 py-1 rounded-lg transition">Logout</button>
-              </div>
-            ) : (
-              <span className="opacity-70 text-gray-500">Not signed in</span>
-            )}
-          </div>
+          {me && (
+            <div className="text-sm pt-2">
+              Logged in as: <strong>{me.username || me.mobile}</strong>
+            </div>
+          )}
         </div>
       )}
     </nav>
