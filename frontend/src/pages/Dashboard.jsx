@@ -15,7 +15,6 @@ export default function Dashboard() {
   const [me, setMe] = useState(null);
   const [message, setMessage] = useState("");
 
-  // Form state
   const [form, setForm] = useState({
     applicantName: "",
     fatherName: "",
@@ -180,36 +179,22 @@ export default function Dashboard() {
 
     try {
       const formData = new FormData();
-      
-      // Debug: Log what we're sending
-      console.log("Form data being submitted:", form);
-      
       Object.entries(form).forEach(([k, v]) => {
         if (v !== null && v !== undefined && v !== "") {
           formData.append(k, v);
         }
       });
 
-      // Debug: Log FormData contents
-      console.log("FormData contents:");
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-      }
-
       const response = await api("/applications", {
         method: "POST",
         headers: { Authorization: `Bearer ${getToken()}` },
         body: formData,
       });
-      
-      console.log("Submission response:", response);
+
       setMessage("Application submitted successfully.");
       loadApplications();
     } catch (e) {
-      console.error("Submission error:", e);
-      // Try to get more detailed error info
       if (e.response) {
-        console.error("Error response:", e.response);
         setMessage(`Submission failed: ${e.response.message || e.response.error || e.message}`);
       } else {
         setMessage(e.message || "Submission failed.");
@@ -218,66 +203,79 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto my-6 sm:my-10 bg-white rounded-xl shadow-sm p-4 sm:p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Dashboard</h2>
-        {me && (
-          <div className="text-sm text-gray-700">
-            Logged in as: <strong>{me.username || me.mobile}</strong>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
+      <div className="max-w-5xl mx-auto my-6 sm:my-10 bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-gray-800">Dashboard</h2>
+          <div className="flex items-center gap-4">
+            {me && (
+              <div className="text-sm text-gray-700">
+                Logged in as: <strong>{me.username || me.mobile}</strong>
+              </div>
+            )}
+            <button
+              onClick={logout}
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all duration-200"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+
+        {/* Progress */}
+        <div className="mb-6">
+          <div className="flex justify-between text-[11px] sm:text-xs md:text-sm font-medium mb-1">
+            {steps.map((label, idx) => (
+              <span
+                key={label}
+                className={idx === step ? "text-blue-700 font-semibold" : "text-gray-500"}
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="bg-blue-600 h-2 rounded-full transition-all"
+              style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {message && (
+          <div className={`mb-4 rounded-lg px-4 py-3 text-sm border
+            ${message.includes("successfully") 
+              ? "bg-green-50 text-green-700 border-green-200" 
+              : "bg-amber-50 text-amber-900 border-amber-300"}`}>
+            {message}
           </div>
         )}
-      </div>
 
-      {/* Progress */}
-      <div className="mb-6">
-        <div className="flex justify-between text-[11px] sm:text-xs md:text-sm font-medium mb-1">
-          {steps.map((label, idx) => (
-            <span
-              key={label}
-              className={idx === step ? "text-blue-900" : "text-gray-500"}
-            >
-              {label}
-            </span>
-          ))}
+        <form
+          onSubmit={submitApplication}
+          className="space-y-6 border border-gray-200 rounded-2xl p-4 sm:p-6 bg-gray-50"
+        >
+          {renderStep(step, form, handleChange, me, steps, nextStep, prevStep, submitApplication, applications, message)}
+        </form>
+
+        <div className="mt-10">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">My Applications</h3>
+          <ul className="space-y-2">
+            {applications.map((a) => (
+              <li
+                key={a.id}
+                className="p-3 border border-gray-200 rounded-lg bg-white shadow-sm"
+              >
+                <div className="font-semibold text-gray-800">{a.applicant_name}</div>
+                <div className="text-xs text-gray-500">
+                  {a.created_at ? new Date(a.created_at).toLocaleString() : ""}
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-4 text-xs text-gray-500">Helpdesk: 0612224975</div>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div
-            className="bg-blue-900 h-2 rounded-full transition-all"
-            style={{ width: `${((step + 1) / steps.length) * 100}%` }}
-          />
-        </div>
-      </div>
-
-      {message && (
-        <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 text-amber-900 px-4 py-3 text-sm">
-          {message}
-        </div>
-      )}
-
-      <form
-        onSubmit={submitApplication}
-        className="space-y-6 border border-gray-200 rounded-2xl p-4 sm:p-6"
-      >
-        {renderStep(step, form, handleChange, me, steps, nextStep, prevStep, submitApplication, applications, message)}
-      </form>
-
-      <div className="mt-10">
-        <h3 className="text-lg font-medium mb-3">My Applications</h3>
-        <ul className="space-y-2">
-          {applications.map((a) => (
-            <li
-              key={a.id}
-              className="p-3 border border-gray-200 rounded-lg bg-gray-50"
-            >
-              <div className="font-semibold">{a.applicant_name}</div>
-              <div className="text-xs text-gray-500">
-                {a.created_at ? new Date(a.created_at).toLocaleString() : ""}
-              </div>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-4 text-xs text-gray-500">Helpdesk: 0612224975</div>
       </div>
     </div>
   );
@@ -286,7 +284,7 @@ export default function Dashboard() {
 /* ---------- Step Renderer ---------- */
 function renderStep(step, form, handleChange, me, steps, nextStep, prevStep, submitApplication, applications, message) {
   return (
-    <div>
+        <div>
       {/* STEP 0 — Personal Information */}
       {step === 0 && (
         <>
@@ -687,7 +685,7 @@ function Field({ label, name, value, onChange, type = "text", required = false, 
         required={required}
         inputMode={inputMode}
         maxLength={maxLength}
-        className="mt-1 block w-full rounded-lg bg-gray-100 border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
+        className="mt-1 block w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:bg-white"
       />
     </div>
   );
@@ -702,7 +700,7 @@ function Select({ label, name, value, onChange, options, required = false }) {
         value={value}
         onChange={onChange}
         required={required}
-        className="mt-1 block w-full rounded-lg bg-gray-100 border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
+        className="mt-1 block w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:bg-white"
       >
         {options.map((opt) => (
           <option key={opt.v} value={opt.v}>
@@ -728,7 +726,7 @@ function RadioGroup({ label, name, value, onChange, options, required = false })
               checked={value === opt.v}
               onChange={onChange}
               required={required}
-              className="h-4 w-4 text-blue-600"
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500"
             />
             <span className="ml-2 text-sm">{opt.l}</span>
           </div>
@@ -748,7 +746,7 @@ function TextArea({ label, name, value, onChange, required = false }) {
         onChange={onChange}
         required={required}
         rows={3}
-        className="mt-1 block w-full rounded-lg bg-gray-100 border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
+        className="mt-1 block w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:bg-white"
       />
     </div>
   );
@@ -763,7 +761,7 @@ function FileField({ label, name, onChange, required = false, fileValue }) {
         name={name}
         onChange={onChange}
         required={required && !fileValue}
-        className="mt-1 block w-full text-sm"
+        className="mt-1 block w-full text-sm text-gray-700"
       />
       {fileValue && fileValue.name && (
         <div className="text-xs text-green-600 mt-1">Selected: {fileValue.name}</div>
