@@ -117,7 +117,9 @@ export default function Login() {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: "linear-gradient(to bottom right, #372948, #241630)" }}
+      style={{
+        background: "linear-gradient(to bottom right, #372948, #241630)",
+      }}
     >
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-sm p-6">
         {/* Header */}
@@ -159,8 +161,8 @@ export default function Login() {
                 }}
                 onKeyPress={(e) => handleKeyPress(e, sendOtp)}
                 placeholder="Enter your mobile number"
-                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:bg-white"
-                style={{ borderColor: "#372948", outlineColor: "#5a3e70" }}
+                className="w-full rounded-lg border px-3 py-2 text-sm placeholder-gray-400 
+                  focus:outline-none focus:ring-2 focus:ring-[#5a3e70] focus:border-[#5a3e70]"
                 autoComplete="tel"
                 required
               />
@@ -212,8 +214,8 @@ export default function Login() {
                 onKeyPress={(e) => handleKeyPress(e, verifyOtp)}
                 placeholder="6-digit OTP"
                 maxLength={6}
-                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-lg text-center tracking-widest placeholder-gray-400 focus:outline-none focus:ring-2 focus:bg-white"
-                style={{ borderColor: "#372948", outlineColor: "#5a3e70" }}
+                className="w-full rounded-lg border px-3 py-2 text-lg text-center tracking-widest placeholder-gray-400 
+                  focus:outline-none focus:ring-2 focus:ring-[#5a3e70] focus:border-[#5a3e70]"
                 autoComplete="one-time-code"
                 required
               />
