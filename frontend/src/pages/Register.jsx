@@ -107,10 +107,8 @@ export default function Register() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-3 sm:px-4 py-6"
-      style={{ background: "linear-gradient(to bottom right, #372948, #241630)" }}
-    >
+    <div className="min-h-screen flex items-center justify-center px-3 sm:px-4 py-6"
+         style={{ background: "linear-gradient(to bottom right, #372948, #241630)" }}>
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg w-full max-w-xs sm:max-w-sm p-5 sm:p-6">
         {/* Header */}
         <div className="text-center mb-5">
@@ -150,12 +148,8 @@ export default function Register() {
                   setMobile(cleaned);
                 }}
                 placeholder="Enter your mobile number"
-                className="w-full rounded-lg px-3 py-2 text-sm placeholder-gray-400 
-                           focus:outline-none focus:bg-white"
-                style={{
-                  border: "1px solid #372948",
-                  caretColor: "#372948",
-                }}
+                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:bg-white"
+                style={{ borderColor: "#372948", focusRingColor: "#372948" }}
                 autoComplete="tel"
                 required
               />
@@ -166,13 +160,7 @@ export default function Register() {
               disabled={loading || !mobile.trim()}
               className="w-full rounded-lg text-white py-2 text-sm sm:text-base font-semibold transition-colors"
               style={{
-                backgroundColor: loading ? "#372948" : "#5a3e70",
-              }}
-              onMouseEnter={(e) => {
-                if (!loading) e.currentTarget.style.backgroundColor = "#4a325d";
-              }}
-              onMouseLeave={(e) => {
-                if (!loading) e.currentTarget.style.backgroundColor = "#5a3e70";
+                backgroundColor: loading ? "#9e8fb2" : "#372948",
               }}
             >
               {loading ? "Sending OTP..." : "Send OTP"}
@@ -202,12 +190,8 @@ export default function Register() {
                 }
                 placeholder="6-digit OTP"
                 maxLength={6}
-                className="w-full rounded-lg px-3 py-2 text-lg text-center tracking-widest placeholder-gray-400 
-                           focus:outline-none focus:bg-white"
-                style={{
-                  border: "1px solid #372948",
-                  caretColor: "#372948",
-                }}
+                className="w-full rounded-lg border bg-gray-50 px-3 py-2 text-lg text-center tracking-widest placeholder-gray-400 focus:outline-none focus:ring-2 focus:bg-white"
+                style={{ borderColor: "#372948" }}
                 autoComplete="one-time-code"
                 required
               />
@@ -227,13 +211,7 @@ export default function Register() {
                 disabled={loading || otp.length !== 6}
                 className="w-full rounded-lg text-white py-2 text-sm sm:text-base font-semibold transition-colors disabled:opacity-60"
                 style={{
-                  backgroundColor: loading ? "#372948" : "#5a3e70",
-                }}
-                onMouseEnter={(e) => {
-                  if (!loading) e.currentTarget.style.backgroundColor = "#4a325d";
-                }}
-                onMouseLeave={(e) => {
-                  if (!loading) e.currentTarget.style.backgroundColor = "#5a3e70";
+                  backgroundColor: loading ? "#9e8fb2" : "#372948",
                 }}
               >
                 {loading ? "Verifying..." : "Verify OTP"}
