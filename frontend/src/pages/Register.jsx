@@ -13,17 +13,45 @@ export default function Register() {
     e.preventDefault();
     setMessage("");
     setLoading(true);
+    
+    // Validate mobile number
+    if (!mobile || mobile.trim().length < 10) {
+      setMessageType("error");
+      setMessage("Please enter a valid mobile number");
+      setLoading(false);
+      return;
+    }
+    
+    const requestBody = {
+      mobile: mobile.trim(),
+      username: mobile.trim(), // Use mobile as username
+    };
+    
+    console.log("Sending request body:", requestBody); // Debug log
+    
     try {
-      await api("/auth/send-otp", {
+      const response = await api("/auth/send-otp", {
         method: "POST",
-        body: JSON.stringify({ mobile }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
       });
+      
       setMessageType("success");
       setMessage("OTP sent via SMS.");
       setStep("enterOtp");
     } catch (err) {
       setMessageType("error");
-      setMessage(err.message || "Failed to send OTP");
+      // More detailed error handling
+      if (err.status === 400) {
+        setMessage(err.message || "Invalid mobile number format");
+      } else if (err.status === 429) {
+        setMessage("Too many requests. Please try again later.");
+      } else {
+        setMessage(err.message || "Failed to send OTP. Please try again.");
+      }
+      console.error("Send OTP Error:", err);
     } finally {
       setLoading(false);
     }
@@ -33,15 +61,55 @@ export default function Register() {
     e.preventDefault();
     setMessage("");
     setLoading(true);
+    
+    // Validate OTP
+    if (!otp || otp.length !== 6) {
+      setMessageType("error");
+      setMessage("Please enter a valid 6-digit OTP");
+      setLoading(false);
+      return;
+    }
+    
+    const requestBody = {
+      mobile: mobile.trim(), 
+      otp: otp.trim(),
+      username: mobile.trim(), // Use mobile as username
+    };
+    
+    console.log("Verifying with request body:", requestBody); // Debug log
+    
     try {
-      await api("/auth/verify-otp", {
+      const response = await api("/auth/verify-otp", {
         method: "POST",
-        body: JSON.stringify({ mobile, otp }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
       });
-      window.location.href = "/login";
+      
+      // Successful verification
+      setMessageType("success");
+      setMessage("Registration successful! Redirecting...");
+      
+      // Redirect after a brief delay to show success message
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1500);
+      
     } catch (err) {
       setMessageType("error");
-      setMessage(err.message || "Invalid OTP");
+      // More detailed error handling
+      if (err.status === 400) {
+        setMessage(err.message || "Invalid OTP or mobile number");
+      } else if (err.status === 410) {
+        setMessage("OTP has expired. Please request a new one.");
+        setStep("enterMobile");
+      } else if (err.status === 429) {
+        setMessage("Too many attempts. Please try again later.");
+      } else {
+        setMessage(err.message || "Invalid OTP. Please try again.");
+      }
+      console.error("Verify OTP Error:", err);
     } finally {
       setLoading(false);
     }
@@ -62,7 +130,7 @@ export default function Register() {
             Register
           </h2>
           <p className="text-xs sm:text-sm text-gray-600">
-            Use your mobile number to sign up.
+            Create your account with mobile number
           </p>
         </div>
 
@@ -87,17 +155,24 @@ export default function Register() {
                 Mobile Number
               </label>
               <input
+                type="tel"
                 value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
-                placeholder="Enter mobile number"
+                onChange={(e) => {
+                  // Allow only numbers, +, -, spaces, and parentheses
+                  const cleaned = e.target.value.replace(/[^\d+\-\s()]/g, '');
+                  setMobile(cleaned);
+                }}
+                placeholder="Enter your mobile number"
                 className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                autoComplete="tel"
+                required
               />
             </div>
 
             <button
               type="submit"
               disabled={loading || !mobile.trim()}
-              className="w-full rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white py-2 text-sm sm:text-base font-semibold"
+              className="w-full rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white py-2 text-sm sm:text-base font-semibold transition-colors"
             >
               {loading ? "Sending OTP..." : "Send OTP"}
             </button>
@@ -116,6 +191,7 @@ export default function Register() {
                 Enter OTP
               </label>
               <input
+                type="text"
                 value={otp}
                 onChange={(e) =>
                   setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
@@ -123,6 +199,8 @@ export default function Register() {
                 placeholder="6-digit OTP"
                 maxLength={6}
                 className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-lg text-center tracking-widest placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                autoComplete="one-time-code"
+                required
               />
             </div>
 
@@ -130,7 +208,7 @@ export default function Register() {
               <button
                 type="button"
                 onClick={goBack}
-                className="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                className="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
               >
                 Back
               </button>
@@ -138,7 +216,7 @@ export default function Register() {
               <button
                 type="submit"
                 disabled={loading || otp.length !== 6}
-                className="w-full rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white py-2 text-sm sm:text-base font-semibold"
+                className="w-full rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white py-2 text-sm sm:text-base font-semibold transition-colors"
               >
                 {loading ? "Verifying..." : "Verify OTP"}
               </button>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { api } from "../lib/api";
 
 export default function Login() {
   const params = new URLSearchParams(window.location?.search || "");
@@ -10,22 +11,10 @@ export default function Login() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("error");
   const [loading, setLoading] = useState(false);
-
-  // Mock API calls for demonstration
-  const api = async (endpoint, options) => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    if (endpoint === "/auth/login/send-otp") {
-      return { username: "John Doe" };
-    }
-    if (endpoint === "/auth/verify-otp") {
-      if (options.body.includes('"otp":"123456"')) {
-        return { token: "mock-jwt-token" };
-      }
-      throw new Error("Invalid OTP");
-    }
-  };
+  const [username, setUsername] = useState("");
 
   const setToken = (token) => {
+    localStorage.setItem('authToken', token);
     console.log("Token set:", token);
   };
 
@@ -33,21 +22,43 @@ export default function Login() {
     setMessage("");
     setLoading(true);
 
+    // Validate mobile number
+    if (!mobile || mobile.trim().length < 10) {
+      setMessageType("error");
+      setMessage("Please enter a valid mobile number");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const resp = await api("/auth/login/send-otp", {
+      const response = await api("/auth/login/send-otp", {
         method: "POST",
-        body: JSON.stringify({ mobile }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          mobile: mobile.trim()
+        }),
       });
+      
       setMessageType("success");
-      if (resp && resp.username) {
-        setMessage(`Hello ${resp.username}. OTP sent via SMS.`);
+      if (response && response.username) {
+        setUsername(response.username);
+        setMessage(`Hello ${response.username}. OTP sent via SMS.`);
       } else {
         setMessage("OTP sent via SMS.");
       }
       setStep("enterOtp");
     } catch (err) {
       setMessageType("error");
-      setMessage(err.message || "Failed to send OTP");
+      if (err.status === 404) {
+        setMessage("User not found. Please register first.");
+      } else if (err.status === 429) {
+        setMessage("Too many requests. Please try again later.");
+      } else {
+        setMessage(err.message || "Failed to send OTP");
+      }
+      console.error("Send OTP Error:", err);
     } finally {
       setLoading(false);
     }
@@ -57,20 +68,49 @@ export default function Login() {
     setMessage("");
     setLoading(true);
 
+    // Validate OTP
+    if (!otp || otp.length !== 6) {
+      setMessageType("error");
+      setMessage("Please enter a valid 6-digit OTP");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const data = await api("/auth/verify-otp", {
+      const response = await api("/auth/verify-otp", {
         method: "POST",
-        body: JSON.stringify({ mobile, otp }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          mobile: mobile.trim(), 
+          otp: otp.trim() 
+        }),
       });
-      setToken(data.token);
-      setMessageType("success");
-      setMessage("Login successful! Redirecting...");
-      setTimeout(() => {
-        alert("Redirecting to dashboard...");
-      }, 1200);
+      
+      if (response && response.token) {
+        setToken(response.token);
+        setMessageType("success");
+        setMessage("Login successful! Redirecting...");
+        
+        // Redirect to the intended page or dashboard
+        setTimeout(() => {
+          window.location.href = next;
+        }, 1500);
+      }
     } catch (err) {
       setMessageType("error");
-      setMessage(err.message || "Invalid OTP");
+      if (err.status === 400) {
+        setMessage(err.message || "Invalid OTP");
+      } else if (err.status === 410) {
+        setMessage("OTP has expired. Please request a new one.");
+        setStep("enterMobile");
+      } else if (err.status === 429) {
+        setMessage("Too many attempts. Please try again later.");
+      } else {
+        setMessage(err.message || "Login failed. Please try again.");
+      }
+      console.error("Verify OTP Error:", err);
     } finally {
       setLoading(false);
     }
@@ -80,6 +120,7 @@ export default function Login() {
     setStep("enterMobile");
     setOtp("");
     setMessage("");
+    setUsername("");
   };
 
   const handleKeyPress = (e, action) => {
@@ -96,7 +137,7 @@ export default function Login() {
           <h2 className="text-2xl font-bold text-gray-800">Login</h2>
           <p className="text-sm text-gray-600 mt-1">
             {step === "enterMobile"
-              ? "Sign in with your mobile number using OTP verification"
+              ? "Sign in with your mobile number"
               : "Enter the OTP sent to your mobile"}
           </p>
         </div>
@@ -114,7 +155,7 @@ export default function Login() {
           </div>
         )}
 
-        {/* Step 1 */}
+        {/* Step 1: Enter Mobile */}
         {step === "enterMobile" && (
           <div className="space-y-4">
             <div>
@@ -124,10 +165,16 @@ export default function Login() {
               <input
                 type="tel"
                 value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
+                onChange={(e) => {
+                  // Allow only numbers, +, -, spaces, and parentheses
+                  const cleaned = e.target.value.replace(/[^\d+\-\s()]/g, '');
+                  setMobile(cleaned);
+                }}
                 onKeyPress={(e) => handleKeyPress(e, sendOtp)}
                 placeholder="Enter your mobile number"
                 className="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-200"
+                autoComplete="tel"
+                required
               />
             </div>
             <button
@@ -140,11 +187,16 @@ export default function Login() {
           </div>
         )}
 
-        {/* Step 2 */}
+        {/* Step 2: Enter OTP */}
         {step === "enterOtp" && (
           <div className="space-y-4">
             <div className="text-center p-2 bg-blue-50 rounded-lg text-sm text-blue-800">
               OTP sent to <span className="font-semibold">{mobile}</span>
+              {username && (
+                <div className="mt-1 text-xs">
+                  Welcome back, <span className="font-semibold">{username}</span>
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -157,9 +209,11 @@ export default function Login() {
                   setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
                 }
                 onKeyPress={(e) => handleKeyPress(e, verifyOtp)}
-                placeholder="6-digit OTP (try: 123456)"
+                placeholder="6-digit OTP"
                 maxLength={6}
                 className="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-lg text-center tracking-widest placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-200"
+                autoComplete="one-time-code"
+                required
               />
             </div>
             <div className="flex gap-2">
@@ -183,8 +237,7 @@ export default function Login() {
         {/* Footer link */}
         <div className="mt-6 text-center">
           <a
-            href="#"
-            onClick={(e) => { e.preventDefault(); alert("Redirecting to register..."); }}
+            href="/register"
             className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
           >
             New user? Register
