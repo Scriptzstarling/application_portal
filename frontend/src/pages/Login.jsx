@@ -93,7 +93,7 @@ export default function Login() {
         setMessageType("success");
         setMessage("Login successful! Redirecting...");
         
-        // Redirect to the intended page or dashboard
+       
         setTimeout(() => {
           window.location.href = next;
         }, 1500);
@@ -166,7 +166,7 @@ export default function Login() {
                 type="tel"
                 value={mobile}
                 onChange={(e) => {
-                  // Allow only numbers, +, -, spaces, and parentheses
+                  
                   const cleaned = e.target.value.replace(/[^\d+\-\s()]/g, '');
                   setMobile(cleaned);
                 }}

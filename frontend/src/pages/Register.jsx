@@ -14,7 +14,7 @@ export default function Register() {
     setMessage("");
     setLoading(true);
     
-    // Validate mobile number
+    
     if (!mobile || mobile.trim().length < 10) {
       setMessageType("error");
       setMessage("Please enter a valid mobile number");
@@ -24,10 +24,10 @@ export default function Register() {
     
     const requestBody = {
       mobile: mobile.trim(),
-      username: mobile.trim(), // Use mobile as username
+      username: mobile.trim(), 
     };
     
-    console.log("Sending request body:", requestBody); // Debug log
+    console.log("Sending request body:", requestBody);
     
     try {
       const response = await api("/auth/send-otp", {
@@ -43,7 +43,7 @@ export default function Register() {
       setStep("enterOtp");
     } catch (err) {
       setMessageType("error");
-      // More detailed error handling
+      
       if (err.status === 400) {
         setMessage(err.message || "Invalid mobile number format");
       } else if (err.status === 429) {
@@ -76,7 +76,7 @@ export default function Register() {
       username: mobile.trim(), // Use mobile as username
     };
     
-    console.log("Verifying with request body:", requestBody); // Debug log
+    console.log("Verifying with request body:", requestBody); 
     
     try {
       const response = await api("/auth/verify-otp", {
@@ -91,7 +91,7 @@ export default function Register() {
       setMessageType("success");
       setMessage("Registration successful! Redirecting...");
       
-      // Redirect after a brief delay to show success message
+      
       setTimeout(() => {
         window.location.href = "/login";
       }, 1500);
