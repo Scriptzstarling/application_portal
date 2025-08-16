@@ -13,37 +13,31 @@ export default function Register() {
     e.preventDefault();
     setMessage("");
     setLoading(true);
-    
-    
+
     if (!mobile || mobile.trim().length < 10) {
       setMessageType("error");
       setMessage("Please enter a valid mobile number");
       setLoading(false);
       return;
     }
-    
+
     const requestBody = {
       mobile: mobile.trim(),
-      username: mobile.trim(), 
+      username: mobile.trim(),
     };
-    
-    console.log("Sending request body:", requestBody);
-    
+
     try {
-      const response = await api("/auth/send-otp", {
+      await api("/auth/send-otp", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
       });
-      
+
       setMessageType("success");
       setMessage("OTP sent via SMS.");
       setStep("enterOtp");
     } catch (err) {
       setMessageType("error");
-      
       if (err.status === 400) {
         setMessage(err.message || "Invalid mobile number format");
       } else if (err.status === 429) {
@@ -61,44 +55,35 @@ export default function Register() {
     e.preventDefault();
     setMessage("");
     setLoading(true);
-    
-    // Validate OTP
+
     if (!otp || otp.length !== 6) {
       setMessageType("error");
       setMessage("Please enter a valid 6-digit OTP");
       setLoading(false);
       return;
     }
-    
+
     const requestBody = {
-      mobile: mobile.trim(), 
+      mobile: mobile.trim(),
       otp: otp.trim(),
-      username: mobile.trim(), // Use mobile as username
+      username: mobile.trim(),
     };
-    
-    console.log("Verifying with request body:", requestBody); 
-    
+
     try {
-      const response = await api("/auth/verify-otp", {
+      await api("/auth/verify-otp", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
       });
-      
-      // Successful verification
+
       setMessageType("success");
       setMessage("Registration successful! Redirecting...");
-      
-      
+
       setTimeout(() => {
         window.location.href = "/login";
       }, 1500);
-      
     } catch (err) {
       setMessageType("error");
-      // More detailed error handling
       if (err.status === 400) {
         setMessage(err.message || "Invalid OTP or mobile number");
       } else if (err.status === 410) {
@@ -122,7 +107,10 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-3 sm:px-4 py-6">
+    <div
+      className="min-h-screen flex items-center justify-center px-3 sm:px-4 py-6"
+      style={{ background: "linear-gradient(to bottom right, #372948, #241630)" }}
+    >
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg w-full max-w-xs sm:max-w-sm p-5 sm:p-6">
         {/* Header */}
         <div className="text-center mb-5">
@@ -158,12 +146,12 @@ export default function Register() {
                 type="tel"
                 value={mobile}
                 onChange={(e) => {
-                  // Allow only numbers, +, -, spaces, and parentheses
-                  const cleaned = e.target.value.replace(/[^\d+\-\s()]/g, '');
+                  const cleaned = e.target.value.replace(/[^\d+\-\s()]/g, "");
                   setMobile(cleaned);
                 }}
                 placeholder="Enter your mobile number"
-                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:bg-white"
+                style={{ borderColor: "#372948" }}
                 autoComplete="tel"
                 required
               />
@@ -172,7 +160,16 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading || !mobile.trim()}
-              className="w-full rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white py-2 text-sm sm:text-base font-semibold transition-colors"
+              className="w-full rounded-lg text-white py-2 text-sm sm:text-base font-semibold transition-colors"
+              style={{
+                backgroundColor: loading ? "#372948" : "#5a3e70",
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) e.currentTarget.style.backgroundColor = "#4a325d";
+              }}
+              onMouseLeave={(e) => {
+                if (!loading) e.currentTarget.style.backgroundColor = "#5a3e70";
+              }}
             >
               {loading ? "Sending OTP..." : "Send OTP"}
             </button>
@@ -182,7 +179,10 @@ export default function Register() {
         {/* Step 2: Enter OTP */}
         {step === "enterOtp" && (
           <form onSubmit={verifyOtp} className="space-y-3">
-            <div className="text-center p-2 bg-blue-50 rounded-lg text-xs sm:text-sm text-blue-800">
+            <div
+              className="text-center p-2 rounded-lg text-xs sm:text-sm font-medium"
+              style={{ backgroundColor: "#f2ecf8", color: "#372948" }}
+            >
               OTP sent to <span className="font-semibold">{mobile}</span>
             </div>
 
@@ -198,7 +198,8 @@ export default function Register() {
                 }
                 placeholder="6-digit OTP"
                 maxLength={6}
-                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-lg text-center tracking-widest placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                className="w-full rounded-lg border bg-gray-50 px-3 py-2 text-lg text-center tracking-widest placeholder-gray-400 focus:outline-none focus:ring-2 focus:bg-white"
+                style={{ borderColor: "#372948" }}
                 autoComplete="one-time-code"
                 required
               />
@@ -216,7 +217,16 @@ export default function Register() {
               <button
                 type="submit"
                 disabled={loading || otp.length !== 6}
-                className="w-full rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white py-2 text-sm sm:text-base font-semibold transition-colors"
+                className="w-full rounded-lg text-white py-2 text-sm sm:text-base font-semibold transition-colors disabled:opacity-60"
+                style={{
+                  backgroundColor: loading ? "#372948" : "#5a3e70",
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) e.currentTarget.style.backgroundColor = "#4a325d";
+                }}
+                onMouseLeave={(e) => {
+                  if (!loading) e.currentTarget.style.backgroundColor = "#5a3e70";
+                }}
               >
                 {loading ? "Verifying..." : "Verify OTP"}
               </button>
@@ -228,7 +238,8 @@ export default function Register() {
         <div className="mt-5 text-center">
           <a
             href="/login"
-            className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium"
+            className="text-xs sm:text-sm font-medium"
+            style={{ color: "#372948" }}
           >
             Already have an account? Login
           </a>

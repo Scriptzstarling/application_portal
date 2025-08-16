@@ -14,7 +14,7 @@ export default function Login() {
   const [username, setUsername] = useState("");
 
   const setToken = (token) => {
-    localStorage.setItem('authToken', token);
+    localStorage.setItem("authToken", token);
     console.log("Token set:", token);
   };
 
@@ -22,7 +22,6 @@ export default function Login() {
     setMessage("");
     setLoading(true);
 
-    // Validate mobile number
     if (!mobile || mobile.trim().length < 10) {
       setMessageType("error");
       setMessage("Please enter a valid mobile number");
@@ -33,14 +32,10 @@ export default function Login() {
     try {
       const response = await api("/auth/login/send-otp", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-          mobile: mobile.trim()
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mobile: mobile.trim() }),
       });
-      
+
       setMessageType("success");
       if (response && response.username) {
         setUsername(response.username);
@@ -68,7 +63,6 @@ export default function Login() {
     setMessage("");
     setLoading(true);
 
-    // Validate OTP
     if (!otp || otp.length !== 6) {
       setMessageType("error");
       setMessage("Please enter a valid 6-digit OTP");
@@ -79,21 +73,14 @@ export default function Login() {
     try {
       const response = await api("/auth/verify-otp", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-          mobile: mobile.trim(), 
-          otp: otp.trim() 
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mobile: mobile.trim(), otp: otp.trim() }),
       });
-      
+
       if (response && response.token) {
         setToken(response.token);
         setMessageType("success");
         setMessage("Login successful! Redirecting...");
-        
-       
         setTimeout(() => {
           window.location.href = next;
         }, 1500);
@@ -124,13 +111,14 @@ export default function Login() {
   };
 
   const handleKeyPress = (e, action) => {
-    if (e.key === 'Enter') {
-      action();
-    }
+    if (e.key === "Enter") action();
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: "linear-gradient(to bottom right, #372948, #241630)" }}
+    >
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-sm p-6">
         {/* Header */}
         <div className="text-center mb-6">
@@ -166,13 +154,13 @@ export default function Login() {
                 type="tel"
                 value={mobile}
                 onChange={(e) => {
-                  
-                  const cleaned = e.target.value.replace(/[^\d+\-\s()]/g, '');
+                  const cleaned = e.target.value.replace(/[^\d+\-\s()]/g, "");
                   setMobile(cleaned);
                 }}
                 onKeyPress={(e) => handleKeyPress(e, sendOtp)}
                 placeholder="Enter your mobile number"
-                className="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-200"
+                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:bg-white"
+                style={{ borderColor: "#372948", outlineColor: "#5a3e70" }}
                 autoComplete="tel"
                 required
               />
@@ -180,7 +168,16 @@ export default function Login() {
             <button
               onClick={sendOtp}
               disabled={loading || !mobile.trim()}
-              className="w-full rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white py-2 font-semibold transition-all duration-200"
+              className="w-full rounded-lg text-white py-2 font-semibold transition-colors"
+              style={{
+                backgroundColor: loading ? "#372948" : "#5a3e70",
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) e.currentTarget.style.backgroundColor = "#4a325d";
+              }}
+              onMouseLeave={(e) => {
+                if (!loading) e.currentTarget.style.backgroundColor = "#5a3e70";
+              }}
             >
               {loading ? "Sending OTP..." : "Send OTP"}
             </button>
@@ -190,11 +187,15 @@ export default function Login() {
         {/* Step 2: Enter OTP */}
         {step === "enterOtp" && (
           <div className="space-y-4">
-            <div className="text-center p-2 bg-blue-50 rounded-lg text-sm text-blue-800">
+            <div
+              className="text-center p-2 rounded-lg text-sm font-medium"
+              style={{ backgroundColor: "#f2ecf8", color: "#372948" }}
+            >
               OTP sent to <span className="font-semibold">{mobile}</span>
               {username && (
                 <div className="mt-1 text-xs">
-                  Welcome back, <span className="font-semibold">{username}</span>
+                  Welcome back,{" "}
+                  <span className="font-semibold">{username}</span>
                 </div>
               )}
             </div>
@@ -211,7 +212,8 @@ export default function Login() {
                 onKeyPress={(e) => handleKeyPress(e, verifyOtp)}
                 placeholder="6-digit OTP"
                 maxLength={6}
-                className="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-lg text-center tracking-widest placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-200"
+                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-lg text-center tracking-widest placeholder-gray-400 focus:outline-none focus:ring-2 focus:bg-white"
+                style={{ borderColor: "#372948", outlineColor: "#5a3e70" }}
                 autoComplete="one-time-code"
                 required
               />
@@ -226,7 +228,16 @@ export default function Login() {
               <button
                 onClick={verifyOtp}
                 disabled={loading || otp.length !== 6}
-                className="flex-1 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white py-2 font-semibold transition-all duration-200"
+                className="flex-1 rounded-lg text-white py-2 font-semibold transition-colors disabled:opacity-60"
+                style={{
+                  backgroundColor: loading ? "#372948" : "#5a3e70",
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) e.currentTarget.style.backgroundColor = "#4a325d";
+                }}
+                onMouseLeave={(e) => {
+                  if (!loading) e.currentTarget.style.backgroundColor = "#5a3e70";
+                }}
               >
                 {loading ? "Verifying..." : "Verify OTP"}
               </button>
@@ -238,7 +249,8 @@ export default function Login() {
         <div className="mt-6 text-center">
           <a
             href="/register"
-            className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
+            className="text-sm font-medium hover:underline"
+            style={{ color: "#372948" }}
           >
             New user? Register
           </a>

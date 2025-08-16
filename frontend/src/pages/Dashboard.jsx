@@ -260,7 +260,10 @@ export default function Dashboard() {
             ) : (
               <button
                 onClick={() => window.location.href = "/login"}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all duration-200"
+                style={{ backgroundColor: "#5a3e70" }}
+                className="hover:bg-opacity-80 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all duration-200"
+                onMouseEnter={(e) => e.target.style.backgroundColor = "#372948"}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "#5a3e70"}
               >
                 Login
               </button>
@@ -675,7 +678,7 @@ function renderStep(step, form, handleChange, me, steps, nextStep, prevStep, sub
           <button
             type="button"
             onClick={prevStep}
-            className="bg-gray-100 border border-gray-300 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200"
+            className="bg-gray-100 border border-gray-300 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 disabled:opacity-60"
           >
             Previous
           </button>
@@ -686,14 +689,20 @@ function renderStep(step, form, handleChange, me, steps, nextStep, prevStep, sub
           <button
             type="button"
             onClick={nextStep}
-            className="bg-blue-900 hover:bg-blue-800 text-white px-6 py-2 rounded-full"
+            style={{ backgroundColor: "#5a3e70" }}
+            className="text-white px-6 py-2 rounded-full transition-all duration-200 disabled:opacity-60"
+            onMouseEnter={(e) => e.target.style.backgroundColor = "#372948"}
+            onMouseLeave={(e) => e.target.style.backgroundColor = "#5a3e70"}
           >
             Next Step
           </button>
         ) : (
           <button
             type="submit"
-            className="bg-blue-900 hover:bg-blue-800 text-white px-6 py-2 rounded-full"
+            style={{ backgroundColor: "#5a3e70" }}
+            className="text-white px-6 py-2 rounded-full transition-all duration-200 disabled:opacity-60"
+            onMouseEnter={(e) => e.target.style.backgroundColor = "#372948"}
+            onMouseLeave={(e) => e.target.style.backgroundColor = "#5a3e70"}
           >
             Submit
           </button>
