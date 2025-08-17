@@ -148,8 +148,8 @@ export default function Register() {
                   setMobile(cleaned);
                 }}
                 placeholder="Enter your mobile number"
-                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:bg-white"
-                style={{ borderColor: "#372948", focusRingColor: "#372948" }}
+                className="w-full rounded-lg border px-3 py-2 text-sm placeholder-gray-400 
+                  focus:outline-none focus:ring-2 focus:ring-[#5a3e70] focus:border-[#5a3e70]"
                 autoComplete="tel"
                 required
               />
@@ -160,7 +160,13 @@ export default function Register() {
               disabled={loading || !mobile.trim()}
               className="w-full rounded-lg text-white py-2 text-sm sm:text-base font-semibold transition-colors"
               style={{
-                backgroundColor: loading ? "#9e8fb2" : "#372948",
+                backgroundColor: loading ? "#372948" : "#5a3e70",
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) e.currentTarget.style.backgroundColor = "#4a325d";
+              }}
+              onMouseLeave={(e) => {
+                if (!loading) e.currentTarget.style.backgroundColor = "#5a3e70";
               }}
             >
               {loading ? "Sending OTP..." : "Send OTP"}

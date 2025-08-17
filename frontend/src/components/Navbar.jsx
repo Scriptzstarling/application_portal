@@ -19,19 +19,34 @@ export default function Navbar() {
         {/* Right cluster on desktop */}
         <div className="hidden sm:flex items-center gap-6 text-sm font-medium">
           <Link
-            className="text-gray-700 hover:text-blue-700 transition-colors"
+            className="text-gray-700 transition-colors"
+            style={{
+              color: "#6b7280"
+            }}
+            onMouseEnter={(e) => e.target.style.color = "#372948"}
+            onMouseLeave={(e) => e.target.style.color = "#6b7280"}
             to="/"
           >
             Register
           </Link>
           <Link
-            className="text-gray-700 hover:text-blue-700 transition-colors"
+            className="text-gray-700 transition-colors"
+            style={{
+              color: "#6b7280"
+            }}
+            onMouseEnter={(e) => e.target.style.color = "#372948"}
+            onMouseLeave={(e) => e.target.style.color = "#6b7280"}
             to="/login"
           >
             Login
           </Link>
           <Link
-            className="text-gray-700 hover:text-blue-700 transition-colors"
+            className="text-gray-700 transition-colors"
+            style={{
+              color: "#6b7280"
+            }}
+            onMouseEnter={(e) => e.target.style.color = "#372948"}
+            onMouseLeave={(e) => e.target.style.color = "#6b7280"}
             to="/dashboard"
           >
             Dashboard
@@ -83,21 +98,36 @@ export default function Navbar() {
         <div className="sm:hidden mt-3 border-t border-gray-200 pt-3">
           <div className="flex flex-col gap-2 text-sm font-medium">
             <Link
-              className="text-gray-700 hover:text-blue-700 transition-colors"
+              className="text-gray-700 transition-colors"
+              style={{
+                color: "#6b7280"
+              }}
+              onMouseEnter={(e) => e.target.style.color = "#372948"}
+              onMouseLeave={(e) => e.target.style.color = "#6b7280"}
               to="/"
               onClick={() => setOpen(false)}
             >
               Register
             </Link>
             <Link
-              className="text-gray-700 hover:text-blue-700 transition-colors"
+              className="text-gray-700 transition-colors"
+              style={{
+                color: "#6b7280"
+              }}
+              onMouseEnter={(e) => e.target.style.color = "#372948"}
+              onMouseLeave={(e) => e.target.style.color = "#6b7280"}
               to="/login"
               onClick={() => setOpen(false)}
             >
               Login
             </Link>
             <Link
-              className="text-gray-700 hover:text-blue-700 transition-colors"
+              className="text-gray-700 transition-colors"
+              style={{
+                color: "#6b7280"
+              }}
+              onMouseEnter={(e) => e.target.style.color = "#372948"}
+              onMouseLeave={(e) => e.target.style.color = "#6b7280"}
               to="/dashboard"
               onClick={() => setOpen(false)}
             >
