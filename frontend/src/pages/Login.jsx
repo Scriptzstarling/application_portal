@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { api } from "../lib/api";
+import { Link } from "react-router-dom"; // Import Link
 
 export default function Login() {
   const params = new URLSearchParams(window.location?.search || "");
@@ -14,13 +14,16 @@ export default function Login() {
   const [username, setUsername] = useState("");
 
   const setToken = (token) => {
-    localStorage.setItem("authToken", token);
+    localStorage.setItem("token", token);
     console.log("Token set:", token);
   };
 
   async function sendOtp() {
     setMessage("");
     setLoading(true);
+
+    // Define a constant for the demo mobile number
+    const DEMO_MOBILE = "1234567890"; // Should match the backend's hardcoded demo number
 
     if (!mobile || mobile.trim().length < 10) {
       setMessageType("error");
@@ -29,78 +32,35 @@ export default function Login() {
       return;
     }
 
-    try {
-      const response = await api("/auth/login/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobile: mobile.trim() }),
-      });
-
+    if (mobile.trim() === DEMO_MOBILE) {
+      // Simulate successful demo login without backend call
+      setToken("demo-token-123"); // Set a placeholder token
       setMessageType("success");
-      if (response && response.username) {
-        setUsername(response.username);
-        setMessage(`Hello ${response.username}. OTP sent via SMS.`);
-      } else {
-        setMessage("OTP sent via SMS.");
-      }
-      setStep("enterOtp");
-    } catch (err) {
-      setMessageType("error");
-      if (err.status === 404) {
-        setMessage("User not found. Please register first.");
-      } else if (err.status === 429) {
-        setMessage("Too many requests. Please try again later.");
-      } else {
-        setMessage(err.message || "Failed to send OTP");
-      }
-      console.error("Send OTP Error:", err);
-    } finally {
+      setMessage("Demo login successful! Redirecting...");
       setLoading(false);
+      setTimeout(() => {
+        window.location.href = next;
+      }, 1000); // Redirect faster for demo
+      return; // Exit after successful demo login
     }
+
+    // If not a demo number, inform user that backend is needed
+    setMessageType("error");
+    setMessage("Backend is not running. Only demo login (1234567890) is available.");
+    setLoading(false);
+    setStep("enterMobile"); // Stay on mobile entry step
+    return; // Crucial: Exit here if not demo number
   }
 
   async function verifyOtp() {
     setMessage("");
     setLoading(true);
 
-    if (!otp || otp.length !== 6) {
-      setMessageType("error");
-      setMessage("Please enter a valid 6-digit OTP");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await api("/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobile: mobile.trim(), otp: otp.trim() }),
-      });
-
-      if (response && response.token) {
-        setToken(response.token);
-        setMessageType("success");
-        setMessage("Login successful! Redirecting...");
-        setTimeout(() => {
-          window.location.href = next;
-        }, 1500);
-      }
-    } catch (err) {
-      setMessageType("error");
-      if (err.status === 400) {
-        setMessage(err.message || "Invalid OTP");
-      } else if (err.status === 410) {
-        setMessage("OTP has expired. Please request a new one.");
-        setStep("enterMobile");
-      } else if (err.status === 429) {
-        setMessage("Too many attempts. Please try again later.");
-      } else {
-        setMessage(err.message || "Login failed. Please try again.");
-      }
-      console.error("Verify OTP Error:", err);
-    } finally {
-      setLoading(false);
-    }
+    // If backend is not running, OTP verification is not possible
+    setMessageType("error");
+    setMessage("OTP verification requires a running backend. Only demo login (1234567890) is available.");
+    setLoading(false);
+    return; // Exit as OTP verification cannot proceed
   }
 
   const goBack = () => {
@@ -249,13 +209,13 @@ export default function Login() {
 
         {/* Footer link */}
         <div className="mt-6 text-center">
-          <a
-            href="/register"
+          <Link
+            to="/register"
             className="text-sm font-medium hover:underline"
             style={{ color: "#372948" }}
           >
             New user? Register
-          </a>
+          </Link>
         </div>
       </div>
     </div>

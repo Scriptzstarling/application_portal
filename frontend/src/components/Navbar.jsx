@@ -1,8 +1,17 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { getToken, clearToken } from "../lib/api"; // Import getToken and clearToken
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!getToken()); // Track login status
+
+  // Function to handle logout
+  const handleLogout = () => {
+    clearToken();
+    setIsLoggedIn(false);
+    window.location.href = "/login"; // Redirect to login page
+  };
 
   return (
     <nav className="bg-white shadow border-b border-gray-200 px-4 sm:px-6 py-3 sticky top-0 z-50">
@@ -18,39 +27,39 @@ export default function Navbar() {
 
         {/* Right cluster on desktop */}
         <div className="hidden sm:flex items-center gap-6 text-sm font-medium">
-          <Link
-            className="text-gray-700 transition-colors"
-            style={{
-              color: "#6b7280"
-            }}
-            onMouseEnter={(e) => e.target.style.color = "#372948"}
-            onMouseLeave={(e) => e.target.style.color = "#6b7280"}
-            to="/"
-          >
-            Register
-          </Link>
-          <Link
-            className="text-gray-700 transition-colors"
-            style={{
-              color: "#6b7280"
-            }}
-            onMouseEnter={(e) => e.target.style.color = "#372948"}
-            onMouseLeave={(e) => e.target.style.color = "#6b7280"}
-            to="/login"
-          >
-            Login
-          </Link>
-          <Link
-            className="text-gray-700 transition-colors"
-            style={{
-              color: "#6b7280"
-            }}
-            onMouseEnter={(e) => e.target.style.color = "#372948"}
-            onMouseLeave={(e) => e.target.style.color = "#6b7280"}
-            to="/dashboard"
-          >
-            Dashboard
-          </Link>
+          {isLoggedIn ? (
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all duration-200"
+            >
+              Logout
+            </button>
+          ) : (
+            <>
+              <Link
+                className="text-gray-700 transition-colors"
+                style={{
+                  color: "#6b7280"
+                }}
+                onMouseEnter={(e) => e.target.style.color = "#372948"}
+                onMouseLeave={(e) => e.target.style.color = "#6b7280"}
+                to="/register"
+              >
+                Register
+              </Link>
+              <Link
+                className="text-gray-700 transition-colors"
+                style={{
+                  color: "#6b7280"
+                }}
+                onMouseEnter={(e) => e.target.style.color = "#372948"}
+                onMouseLeave={(e) => e.target.style.color = "#6b7280"}
+                to="/login"
+              >
+                Login
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile menu button */}
@@ -97,42 +106,44 @@ export default function Navbar() {
       {open && (
         <div className="sm:hidden mt-3 border-t border-gray-200 pt-3">
           <div className="flex flex-col gap-2 text-sm font-medium">
-            <Link
-              className="text-gray-700 transition-colors"
-              style={{
-                color: "#6b7280"
-              }}
-              onMouseEnter={(e) => e.target.style.color = "#372948"}
-              onMouseLeave={(e) => e.target.style.color = "#6b7280"}
-              to="/"
-              onClick={() => setOpen(false)}
-            >
-              Register
-            </Link>
-            <Link
-              className="text-gray-700 transition-colors"
-              style={{
-                color: "#6b7280"
-              }}
-              onMouseEnter={(e) => e.target.style.color = "#372948"}
-              onMouseLeave={(e) => e.target.style.color = "#6b7280"}
-              to="/login"
-              onClick={() => setOpen(false)}
-            >
-              Login
-            </Link>
-            <Link
-              className="text-gray-700 transition-colors"
-              style={{
-                color: "#6b7280"
-              }}
-              onMouseEnter={(e) => e.target.style.color = "#372948"}
-              onMouseLeave={(e) => e.target.style.color = "#6b7280"}
-              to="/dashboard"
-              onClick={() => setOpen(false)}
-            >
-              Dashboard
-            </Link>
+            {isLoggedIn ? (
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setOpen(false); // Close mobile menu after logout
+                }}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all duration-200 w-full text-left"
+              >
+                Logout
+              </button>
+            ) : (
+              <>
+                <Link
+                  className="text-gray-700 transition-colors py-2"
+                  style={{
+                    color: "#6b7280"
+                  }}
+                  onMouseEnter={(e) => e.target.style.color = "#372948"}
+                  onMouseLeave={(e) => e.target.style.color = "#6b7280"}
+                  to="/register"
+                  onClick={() => setOpen(false)}
+                >
+                  Register
+                </Link>
+                <Link
+                  className="text-gray-700 transition-colors py-2"
+                  style={{
+                    color: "#6b7280"
+                  }}
+                  onMouseEnter={(e) => e.target.style.color = "#372948"}
+                  onMouseLeave={(e) => e.target.style.color = "#6b7280"}
+                  to="/login"
+                  onClick={() => setOpen(false)}
+                >
+                  Login
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

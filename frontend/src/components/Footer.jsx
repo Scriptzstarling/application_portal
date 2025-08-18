@@ -10,7 +10,7 @@ export default function Footer() {
         Training Application Portal – Government of Bihar
       </div>
       <small className="block">
-        &copy; {new Date().getFullYear()} Department of Labour Resources, Bihar. All Rights Reserved.
+        &copy; {new Date().getFullYear()} Bihar. All Rights Reserved.
       </small>
     </footer>
   );

@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { api, getToken, clearToken } from "../lib/api";
+// import { api, getToken, clearToken } from "../lib/api"; // Removed api import
 import ReviewApplication from "./ReviewApplication";
 import classNames from 'classnames';
 
 const steps = [
-  { id: 'personal', label: "Personal Information / व्यक्तिगत जानकारी" },
-  { id: 'additional', label: "Additional Details / अतिरिक्त विवरण" },
-  { id: 'contact', label: "Contact & Address / संपर्क और पता" },
-  { id: 'education', label: "Education & Training / शिक्षा और प्रशिक्षण" },
-  { id: 'uploads', label: "Uploads & Declaration / अपलोड और घोषणा" },
+  { id: 'personal', label: "Personal Information<br/>व्यक्तिगत जानकारी" },
+  { id: 'additional', label: "Additional Details<br/>अतिरिक्त विवरण" },
+  { id: 'contact', label: "Contact & Address<br/>संपर्क और पता" },
+  { id: 'education', label: "Education & Training<br/>शिक्षा और प्रशिक्षण" },
+  { id: 'uploads', label: "Uploads & Declaration<br/>अपलोड और घोषणा" },
 ];
 
 export default function Dashboard() {
   const [step, setstep] = useState(0);
-  const [me, setMe] = useState(null);
+  const [me, setMe] = useState({ mobile: "demo-user" }); // Simulate a demo user
   const [message, setMessage] = useState("");
   const [showReviewPage, setShowReviewPage] = useState(false);
 
@@ -62,24 +62,26 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    const token = getToken();
-    if (token) {
-      loadMe();
-    }
+    // const token = getToken(); // Removed getToken call
+    // if (token) {
+    //   loadMe();
+    // }
+    // No backend for now, so no need to load user data from backend
   }, []);
 
   async function loadMe() {
-    const token = getToken();
-    if (!token) return;
+    // const token = getToken(); // Removed getToken call
+    // if (!token) return;
     
-    try {
-      const res = await api("/auth/me", {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      setMe(res);
-    } catch (e) {
-      setMessage(e.message || "Failed to load user");
-    }
+    // try {
+    //   const res = await api("/auth/me", { // Removed API call
+    //     headers: { Authorization: `Bearer ${getToken()}` },
+    //   });
+    //   setMe(res);
+    // } catch (e) {
+    //   setMessage(e.message || "Failed to load user");
+    // }
+    setMe({ mobile: "demo-user" }); // Always simulate a demo user
   }
 
   function handleChange(e) {
@@ -108,7 +110,7 @@ export default function Dashboard() {
   }
 
   function logout() {
-    clearToken();
+    // clearToken(); // Removed clearToken call
     window.location.href = "/login";
   }
 
@@ -219,38 +221,41 @@ export default function Dashboard() {
       return;
     }
 
-    const token = getToken();
-    if (!token) {
-      setMessage("Please login to submit application.");
-      return;
-    }
+    // const token = getToken(); // Removed getToken call
+    // if (!token) {
+    //   setMessage("Please login to submit application.");
+    //   return;
+    // }
 
-    try {
-      const formData = new FormData();
-      Object.entries(form).forEach(([k, v]) => {
-        if (v instanceof File) {
-          formData.append(k, v);
-        } else if (v !== null && v !== undefined && v !== "") {
-          formData.append(k, v);
-        }
-      });
+    // try {
+    //   const formData = new FormData();
+    //   Object.entries(form).forEach(([k, v]) => {
+    //     if (v instanceof File) {
+    //       formData.append(k, v);
+    //     } else if (v !== null && v !== undefined && v !== "") {
+    //       formData.append(k, v);
+    //     }
+    //   });
 
-      const response = await api("/applications", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+    //   const response = await api("/applications", { // Removed API call
+    //     method: "POST",
+    //     headers: { Authorization: `Bearer ${token}` },
+    //     body: formData,
+    //   });
 
-      setMessage("Your application has been submitted successfully!");
-      resetForm();
-      setShowReviewPage(false);
-    } catch (e) {
-      if (e.response) {
-        setMessage(`Submission failed: ${e.response.message || e.response.error || e.message}`);
-      } else {
-        setMessage(e.message || "Submission failed.");
-      }
-    }
+    //   setMessage("Your application has been submitted successfully!");
+    //   resetForm();
+    //   setShowReviewPage(false);
+    // } catch (e) {
+    //   if (e.response) {
+    //     setMessage(`Submission failed: ${e.response.message || e.response.error || e.message}`);
+    //   } else {
+    //     setMessage(e.message || "Submission failed.");
+    //   }
+    // }
+    setMessage("Your application has been submitted successfully (simulated)!"); // Simulate success
+    resetForm();
+    setShowReviewPage(false);
   }
 
   function submitApplication(e) {
@@ -272,32 +277,7 @@ export default function Dashboard() {
       <div className="max-w-5xl mx-auto my-6 sm:my-10 bg-white rounded-2xl shadow-lg p-4 sm:p-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-gray-800">Dashboard</h2>
-          <div className="flex items-center gap-4">
-            {me && (
-              <div className="text-sm text-gray-700">
-                Logged in as: <strong>{me.mobile}</strong>
-              </div>
-            )}
-            {getToken() ? (
-              <button
-                onClick={logout}
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all duration-200"
-              >
-                Logout
-              </button>
-            ) : (
-              <button
-                onClick={() => (window.location.href = "/login")}
-                style={{ backgroundColor: "#4a325d" }}
-                className="hover:bg-opacity-80 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all duration-200"
-                onMouseEnter={(e) => (e.target.style.backgroundColor = "#372948")}
-                onMouseLeave={(e) => (e.target.style.backgroundColor = "#4a325d")}
-              >
-                Login
-              </button>
-            )}
-          </div>
+          {/* Removed Dashboard header */}
         </div>
 
         {/* Progress - Clickable Steps */}
@@ -314,8 +294,8 @@ export default function Dashboard() {
                     : "hover:font-medium"
                 )}
                 style={{ color: i === step ? "#372948" : "#6b7280" }}
+                dangerouslySetInnerHTML={{ __html: s.label }}
               >
-                {s.label}
               </button>
             ))}
           </div>
@@ -416,27 +396,27 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
   switch (step) {
     case 0:
       return (
-        <section>
+        <section className="mb-8">
           <h3 className="text-lg font-semibold mb-4" style={{ color: "#372948" }}>
-            1. Personal Information / व्यक्तिगत जानकारी
+            1. Personal Information<br/>व्यक्तिगत जानकारी
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <Field
-              label="Name of Applicant / आवेदक का नाम*"
+              label="Name of Applicant<br/>आवेदक का नाम*"
               required
               name="applicantName"
               value={form.applicantName}
               onChange={handleChange}
             />
             <Field
-              label="Father's Name / पिता का नाम*"
+              label="Father's Name<br/>पिता का नाम*"
               required
               name="fatherName"
               value={form.fatherName}
               onChange={handleChange}
             />
             <Field
-              label="Mother's Name / माता का नाम*"
+              label="Mother's Name<br/>माता का नाम*"
               required
               name="motherName"
               value={form.motherName}
@@ -444,14 +424,14 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
             />
             <Field
               type="date"
-              label="Date of Birth / जन्म तिथि*"
+              label="Date of Birth<br/>जन्म तिथि*"
               required
               name="dob"
               value={form.dob}
               onChange={handleChange}
             />
             <Select
-              label="Religion / धर्म*"
+              label="Religion<br/>धर्म*"
               required
               name="religion"
               value={form.religion}
@@ -467,7 +447,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
               ]}
             />
             <RadioGroup
-              label="Gender / लिंग*"
+              label="Gender<br/>लिंग*"
               required
               name="gender"
               value={form.gender}
@@ -479,7 +459,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
               ]}
             />
             <RadioGroup
-              label="Physically Handicapped / शारीरिक रूप से विकलांग*"
+              label="Physically Handicapped<br/>शारीरिक रूप से विकलांग*"
               required
               name="handicapped"
               value={form.handicapped}
@@ -491,7 +471,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
             />
             {form.handicapped === "Yes" && (
               <Field
-                label="Degree of Disability / विकलांगता का विवरण"
+                label="Degree of Disability<br/>विकलांगता का विवरण"
                 name="disabilityDegree"
                 value={form.disabilityDegree}
                 onChange={handleChange}
@@ -502,13 +482,13 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
       );
     case 1:
       return (
-        <section>
+        <section className="mb-8">
           <h3 className="text-lg font-semibold mb-4" style={{ color: "#372948" }}>
-            2. Additional Details / अतिरिक्त विवरण
+            2. Additional Details<br/>अतिरिक्त विवरण
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <Field
-              label="Aadhar Number / आधार संख्या*"
+              label="Aadhar Number<br/>आधार संख्या*"
               required
               name="aadhar"
               value={form.aadhar}
@@ -517,7 +497,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
               maxLength={12}
             />
             <Field
-              label="Annual Income / वार्षिक आय*"
+              label="Annual Income<br/>वार्षिक आय*"
               required
               name="income"
               value={form.income}
@@ -525,14 +505,14 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
               inputMode="numeric"
             />
             <FileField
-              label="Income Certificate / आय प्रमाण पत्र*"
+              label="Income Certificate<br/>आय प्रमाण पत्र*"
               required
               name="incomeCert"
               onChange={handleChange}
               fileValue={form.incomeCert} // Pass fileValue to display selected file name
             />
             <Select
-              label="Nationality / नागरिकता*"
+              label="Nationality<br/>नागरिकता*"
               required
               name="nationality"
               value={form.nationality}
@@ -545,7 +525,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
               ]}
             />
             <Select
-              label="Marital Status / वैवाहिक स्थिति*"
+              label="Marital Status<br/>वैवाहिक स्थिति*"
               required
               name="maritalStatus"
               value={form.maritalStatus}
@@ -563,14 +543,14 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
       );
     case 2:
       return (
-        <section>
+        <section className="mb-8">
           <h3 className="text-lg font-semibold mb-4" style={{ color: "#372948" }}>
-            3. Contact & Address / संपर्क और पता
+            3. Contact & Address<br/>संपर्क और पता
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Email / ई-मेल" name="email" value={form.email} onChange={handleChange} />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Field label="Email<br/>ई-मेल" name="email" value={form.email} onChange={handleChange} />
             <Field
-              label="Mobile Number / मोबाइल नंबर*"
+              label="Mobile Number<br/>मोबाइल नंबर*"
               required
               name="mobile"
               value={form.mobile}
@@ -578,7 +558,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
               inputMode="tel"
             />
             <Field
-              label="Telephone Number with STD Code / टेलीफोन नंबर"
+              label="Telephone Number with STD Code<br/>टेलीफोन नंबर"
               name="telephone"
               value={form.telephone}
               onChange={handleChange}
@@ -586,7 +566,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
             />
 
             <RadioGroup
-              label="Are you a domicile/native of Bihar? / क्या आप बिहार राज्य के मूल निवासी हैं?*"
+              label="Are you a domicile/native of Bihar?<br/>क्या आप बिहार राज्य के मूल निवासी हैं?*"
               required
               name="domicileBihar"
               value={form.domicileBihar}
@@ -598,7 +578,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
             />
 
             <FileField
-              label="Residential Certificate / आवासीय प्रमाण पत्र*"
+              label="Residential Certificate<br/>आवासीय प्रमाण पत्र*"
               required
               name="residentialCert"
               onChange={handleChange}
@@ -606,7 +586,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
             />
 
             <Field
-              label="District Name / जिला का नाम*"
+              label="District Name<br/>जिला का नाम*"
               required
               name="district"
               value={form.district}
@@ -614,14 +594,14 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
             />
 
             <TextArea
-              label="Address for Correspondence / पत्राचार का पता*"
+              label="Address for Correspondence<br/>पत्राचार का पता*"
               required
               name="address"
               value={form.address}
               onChange={handleChange}
             />
             <TextArea
-              label="Permanent Address / स्थायी पता*"
+              label="Permanent Address<br/>स्थायी पता*"
               required
               name="permanentAddress"
               value={form.permanentAddress}
@@ -632,20 +612,20 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
       );
     case 3:
       return (
-        <section>
+        <section className="mb-8">
           <h3 className="text-lg font-semibold mb-4" style={{ color: "#372948" }}>
-            4. Education & Training / शिक्षा और प्रशिक्षण
+            4. Education & Training<br/>शिक्षा और प्रशिक्षण
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <Field
-              label="Choice of District (MSY) / कौशल प्रशिक्षण कार्यक्रम हेतु जिला का चुनाव*"
+              label="Choice of District (MSY)<br/>कौशल प्रशिक्षण कार्यक्रम हेतु जिला का चुनाव*"
               required
               name="choiceDistrict"
               value={form.choiceDistrict}
               onChange={handleChange}
             />
             <Field
-              label="Job Role / जॉब रोल*"
+              label="Job Role<br/>जॉब रोल*"
               required
               name="jobRoleChoice"
               value={form.jobRoleChoice}
@@ -653,7 +633,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
             />
 
             <Select
-              label="Highest Educational Qualification / उच्चतम योग्यता*"
+              label="Highest Educational Qualification<br/>उच्चतम योग्यता*"
               required
               name="qualification"
               value={form.qualification}
@@ -671,7 +651,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
             />
 
             <FileField
-              label="Marksheet of Highest Degree / उच्चतम योग्यता की मार्कशीट*"
+              label="Marksheet of Highest Degree<br/>उच्चतम योग्यता की मार्कशीट*"
               required
               name="marksheet"
               onChange={handleChange}
@@ -679,7 +659,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
             />
 
             <RadioGroup
-              label="क्या आपने पहले बिहार राज्य अल्पसंख्यक वित्तीय निगम द्वारा प्रायोजित किसी कौशल विकास कार्यक्रम में प्रशिक्षण लिया है?*"
+              label="क्या आपने पहले बिहार राज्य अल्पसंख्यक वित्तीय निगम द्वारा प्रायोजित किसी कौशल विकास कार्यक्रम में प्रशिक्षण लिया है?<br/>*"
               required
               name="previousTraining"
               value={form.previousTraining}
@@ -703,35 +683,35 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
       );
     case 4:
       return (
-        <section>
+        <section className="mb-8">
           <h3 className="text-lg font-semibold mb-4" style={{ color: "#372948" }}>
-            5. Uploads & Declaration / अपलोड और घोषणा
+            5. Uploads & Declaration<br/>अपलोड और घोषणा
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <FileField
-              label="Income Certificate / आय प्रमाण पत्र*"
+              label="Income Certificate<br/>आय प्रमाण पत्र*"
               required
               name="incomeCert"
               onChange={handleChange}
               fileValue={form.incomeCert} // Pass fileValue to display selected file name
             />
             <FileField
-              label="Upload Signature*"
+              label="Upload Signature*<br/>"
               required
               name="signature"
               onChange={handleChange}
               fileValue={form.signature} // Pass fileValue to display selected file name
             />
             <FileField
-              label="Candidate Photo*"
+              label="Candidate Photo*<br/>"
               required
               name="photo"
               onChange={handleChange}
               fileValue={form.photo} // Pass fileValue to display selected file name
             />
 
-            <div className="md:col-span-2">
+            <div className="md:col-span-3">
               <p className="text-sm text-gray-800 rounded-lg p-3" style={{ backgroundColor: "#f2ecf8", border: "1px solid #372948" }}>
                 <strong>Self Declaration / स्व-घोषणा*</strong>
                 <br />
@@ -751,14 +731,14 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
                   style={{ accentColor: "#372948" }}
                   aria-label="Self Declaration"
                 />
-                <span className="text-sm">
+                <span className="ml-2 text-sm">
                   I agree / मैं सहमत हूँ
                 </span>
               </div>
             </div>
 
             <Field
-              label="Place / स्थान*"
+              label="Place<br/>स्थान*"
               required
               name="place"
               value={form.place}
@@ -766,7 +746,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
             />
             <Field
               type="date"
-              label="Date / तिथि*"
+              label="Date<br/>तिथि*"
               required
               name="date"
               value={form.date}
@@ -784,7 +764,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
 function Field({ label, name, value, onChange, type = "text", required = false, inputMode, maxLength }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <label className="block text-sm font-medium text-gray-700" dangerouslySetInnerHTML={{ __html: label }}></label>
       <input
         type={type}
         id={name} // Added id for accessibility
@@ -806,7 +786,7 @@ function Field({ label, name, value, onChange, type = "text", required = false, 
 function Select({ label, name, value, onChange, options, required = false }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <label className="block text-sm font-medium text-gray-700" dangerouslySetInnerHTML={{ __html: label }}></label>
       <select
         id={name} // Added id for accessibility
         name={name}
@@ -831,7 +811,7 @@ function Select({ label, name, value, onChange, options, required = false }) {
 function RadioGroup({ label, name, value, onChange, options, required = false }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 mb-2" dangerouslySetInnerHTML={{ __html: label }}></label>
       <div className="space-y-2">
         {options.map((opt) => (
           <div key={opt.v} className="flex items-center">
@@ -857,7 +837,7 @@ function RadioGroup({ label, name, value, onChange, options, required = false })
 function TextArea({ label, name, value, onChange, required = false }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <label className="block text-sm font-medium text-gray-700" dangerouslySetInnerHTML={{ __html: label }}></label>
       <textarea
         id={name} // Added id for accessibility
         name={name}
@@ -877,7 +857,7 @@ function TextArea({ label, name, value, onChange, required = false }) {
 function FileField({ label, name, onChange, required = false, fileValue }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <label className="block text-sm font-medium text-gray-700" dangerouslySetInnerHTML={{ __html: label }}></label>
       <input
         type="file"
         id={name} // Added id for accessibility

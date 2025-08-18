@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { api } from "../lib/api";
 
 export default function Register() {
   const [mobile, setMobile] = useState("");
@@ -21,34 +20,10 @@ export default function Register() {
       return;
     }
 
-    const requestBody = {
-      mobile: mobile.trim(),
-      username: mobile.trim(),
-    };
-
-    try {
-      await api("/auth/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
-      });
-
-      setMessageType("success");
-      setMessage("OTP sent via SMS.");
-      setStep("enterOtp");
-    } catch (err) {
-      setMessageType("error");
-      if (err.status === 400) {
-        setMessage(err.message || "Invalid mobile number format");
-      } else if (err.status === 429) {
-        setMessage("Too many requests. Please try again later.");
-      } else {
-        setMessage(err.message || "Failed to send OTP. Please try again.");
-      }
-      console.error("Send OTP Error:", err);
-    } finally {
-      setLoading(false);
-    }
+    setMessageType("error");
+    setMessage("Registration is not available without a running backend.");
+    setLoading(false);
+    return; // Exit as registration cannot proceed
   }
 
   async function verifyOtp(e) {
@@ -56,48 +31,11 @@ export default function Register() {
     setMessage("");
     setLoading(true);
 
-    if (!otp || otp.length !== 6) {
-      setMessageType("error");
-      setMessage("Please enter a valid 6-digit OTP");
-      setLoading(false);
-      return;
-    }
-
-    const requestBody = {
-      mobile: mobile.trim(),
-      otp: otp.trim(),
-      username: mobile.trim(),
-    };
-
-    try {
-      await api("/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
-      });
-
-      setMessageType("success");
-      setMessage("Registration successful! Redirecting...");
-
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 1500);
-    } catch (err) {
-      setMessageType("error");
-      if (err.status === 400) {
-        setMessage(err.message || "Invalid OTP or mobile number");
-      } else if (err.status === 410) {
-        setMessage("OTP has expired. Please request a new one.");
-        setStep("enterMobile");
-      } else if (err.status === 429) {
-        setMessage("Too many attempts. Please try again later.");
-      } else {
-        setMessage(err.message || "Invalid OTP. Please try again.");
-      }
-      console.error("Verify OTP Error:", err);
-    } finally {
-      setLoading(false);
-    }
+    // If backend is not running, OTP verification is not possible
+    setMessageType("error");
+    setMessage("OTP verification for registration requires a running backend.");
+    setLoading(false);
+    return; // Exit as OTP verification cannot proceed
   }
 
   const goBack = () => {
