@@ -1,56 +1,64 @@
 import React, { useEffect, useState } from "react";
 import { api, getToken, clearToken } from "../lib/api";
+import ReviewApplication from "./ReviewApplication";
+import classNames from 'classnames';
 
 const steps = [
-  "Personal Information / व्यक्तिगत जानकारी",
-  "Additional Details / अतिरिक्त विवरण",
-  "Contact & Address / संपर्क और पता",
-  "Education & Training / शिक्षा और प्रशिक्षण",
-  "Uploads & Declaration / अपलोड और घोषणा",
+  { id: 'personal', label: "Personal Information / व्यक्तिगत जानकारी" },
+  { id: 'additional', label: "Additional Details / अतिरिक्त विवरण" },
+  { id: 'contact', label: "Contact & Address / संपर्क और पता" },
+  { id: 'education', label: "Education & Training / शिक्षा और प्रशिक्षण" },
+  { id: 'uploads', label: "Uploads & Declaration / अपलोड और घोषणा" },
 ];
 
 export default function Dashboard() {
   const [step, setstep] = useState(0);
   const [me, setMe] = useState(null);
   const [message, setMessage] = useState("");
+  const [showReviewPage, setShowReviewPage] = useState(false);
 
-  const [form, setForm] = useState({
-    applicantName: "",
-    fatherName: "",
-    motherName: "",
-    dob: "",
-    religion: "",
-    gender: "",
-    handicapped: "",
-    disabilityDegree: "",
+  const [form, setForm] = useState(() => {
+    const savedForm = localStorage.getItem("applicationForm");
+    return savedForm
+      ? JSON.parse(savedForm)
+      : {
+          applicantName: "",
+          fatherName: "",
+          motherName: "",
+          dob: "",
+          religion: "",
+          gender: "",
+          handicapped: "",
+          disabilityDegree: "",
 
-    aadhar: "",
-    income: "",
-    nationality: "",
-    maritalStatus: "",
-    incomeCert: null,
+          aadhar: "",
+          income: "",
+          nationality: "",
+          maritalStatus: "",
+          incomeCert: null,
 
-    email: "",
-    mobile: "",
-    telephone: "",
-    domicileBihar: "",
-    residentialCert: null,
-    district: "",
-    address: "",
-    permanentAddress: "",
+          email: "",
+          mobile: "",
+          telephone: "",
+          domicileBihar: "",
+          residentialCert: null,
+          district: "",
+          address: "",
+          permanentAddress: "",
 
-    choiceDistrict: "",
-    jobRoleChoice: "",
-    qualification: "",
-    marksheet: null,
-    previousTraining: "",
-    previousTrainingDetails: "",
+          choiceDistrict: "",
+          jobRoleChoice: "",
+          qualification: "",
+          marksheet: null,
+          previousTraining: "",
+          previousTrainingDetails: "",
 
-    signature: null,
-    photo: null,
-    selfDeclaration: false,
-    place: "",
-    date: "",
+          signature: null,
+          photo: null,
+          selfDeclaration: false,
+          place: "",
+          date: "",
+        };
   });
 
   useEffect(() => {
@@ -201,8 +209,8 @@ export default function Dashboard() {
     setstep(0);
   }
 
-  async function submitApplication(e) {
-    e.preventDefault();
+  async function finalSubmitApplication(e) {
+    if (e) e.preventDefault();
     setMessage("");
 
     const err = validateBeforeSubmit();
@@ -220,7 +228,9 @@ export default function Dashboard() {
     try {
       const formData = new FormData();
       Object.entries(form).forEach(([k, v]) => {
-        if (v !== null && v !== undefined && v !== "") {
+        if (v instanceof File) {
+          formData.append(k, v);
+        } else if (v !== null && v !== undefined && v !== "") {
           formData.append(k, v);
         }
       });
@@ -233,6 +243,7 @@ export default function Dashboard() {
 
       setMessage("Your application has been submitted successfully!");
       resetForm();
+      setShowReviewPage(false);
     } catch (e) {
       if (e.response) {
         setMessage(`Submission failed: ${e.response.message || e.response.error || e.message}`);
@@ -240,6 +251,20 @@ export default function Dashboard() {
         setMessage(e.message || "Submission failed.");
       }
     }
+  }
+
+  function submitApplication(e) {
+    if (e) e.preventDefault();
+    const err = validateBeforeSubmit();
+    if (err) {
+      setMessage(err);
+      return;
+    }
+    setShowReviewPage(true);
+  }
+
+  function handleEdit() {
+    setShowReviewPage(false);
   }
 
   return (
@@ -263,11 +288,11 @@ export default function Dashboard() {
               </button>
             ) : (
               <button
-                onClick={() => window.location.href = "/login"}
+                onClick={() => (window.location.href = "/login")}
                 style={{ backgroundColor: "#4a325d" }}
                 className="hover:bg-opacity-80 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all duration-200"
-                onMouseEnter={(e) => e.target.style.backgroundColor = "#372948"}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "#4a325d"}
+                onMouseEnter={(e) => (e.target.style.backgroundColor = "#372948")}
+                onMouseLeave={(e) => (e.target.style.backgroundColor = "#4a325d")}
               >
                 Login
               </button>
@@ -278,48 +303,105 @@ export default function Dashboard() {
         {/* Progress - Clickable Steps */}
         <div className="mb-6">
           <div className="flex justify-between text-[11px] sm:text-xs md:text-sm font-medium mb-1">
-            {steps.map((label, idx) => (
+            {steps.map((s, i) => (
               <button
-                key={label}
-                onClick={() => goToStep(idx)}
-                className={`cursor-pointer hover:opacity-80 transition-all ${
-                  idx === step 
-                    ? "font-semibold" 
+                key={s.id}
+                onClick={() => goToStep(i)}
+                className={classNames(
+                  "cursor-pointer hover:opacity-80 transition-all",
+                  i === step
+                    ? "font-semibold"
                     : "hover:font-medium"
-                }`}
-                style={{ color: idx === step ? "#372948" : "#6b7280" }}
+                )}
+                style={{ color: i === step ? "#372948" : "#6b7280" }}
               >
-                {label}
+                {s.label}
               </button>
             ))}
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
               className="h-2 rounded-full transition-all"
-              style={{ 
+              style={{
                 backgroundColor: "#372948",
-                width: `${((step + 1) / steps.length) * 100}%` 
+                width: `${((step + 1) / steps.length) * 100}%`
               }}
             />
           </div>
         </div>
 
         {message && (
-          <div className={`mb-4 rounded-lg px-4 py-3 text-sm border
-            ${message.includes("successfully") 
-              ? "bg-green-50 text-green-700 border-green-200" 
-              : "bg-amber-50 text-amber-900 border-amber-300"}`}>
+          <div
+            className={`mb-4 rounded-lg px-4 py-3 text-sm border
+            ${message.includes("successfully")
+              ? "bg-green-50 text-green-700 border-green-200"
+              : "bg-amber-50 text-amber-900 border-amber-300"}`}
+            role="alert"
+          >
             {message}
           </div>
         )}
 
-        <form
-          onSubmit={submitApplication}
-          className="space-y-6 rounded-2xl p-4 sm:p-6"
-          style={{ backgroundColor: "#f8f7fa", border: "1px solid #372948" }}
-        >
-          {renderStep(step, form, handleChange, me, steps, nextStep, prevStep, submitApplication)}
-        </form>
+        {showReviewPage ? (
+          <ReviewApplication
+            formData={form}
+            onEdit={handleEdit}
+            onFinalSubmit={finalSubmitApplication}
+          />
+        ) : (
+          <form
+            onSubmit={submitApplication}
+            className="space-y-6 rounded-2xl p-4 sm:p-6"
+            style={{ backgroundColor: "#f8f7fa", border: "1px solid #372948" }}
+          >
+            {
+              // Render all steps, but only display the current one
+              steps.map((s, i) => (
+                <div key={s.id} style={{ display: step === i ? 'block' : 'none' }}>
+                  {renderStepContent(i, form, handleChange, me, steps, nextStep, prevStep, submitApplication)}
+                </div>
+              ))
+            }
+
+            {/* Navigation */}
+            <div className="flex justify-between pt-4">
+              {step > 0 ? (
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 disabled:opacity-60 transition-all"
+                  style={{ border: "1px solid #372948" }}
+                >
+                  Previous
+                </button>
+              ) : (
+                <span />
+              )}
+              {step < steps.length - 1 ? (
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  style={{ backgroundColor: "#372948" }}
+                  className="text-white px-6 py-2 rounded-full transition-all duration-200 disabled:opacity-60"
+                  onMouseEnter={(e) => e.target.style.backgroundColor = "#4a325d"}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = "#372948"}
+                >
+                  Next Step
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  style={{ backgroundColor: "#372948" }}
+                  className="text-white px-6 py-2 rounded-full transition-all duration-200 disabled:opacity-60"
+                  onMouseEnter={(e) => e.target.style.backgroundColor = "#4a325d"}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = "#4a325d"}
+                >
+                  Submit
+                </button>
+              )}
+            </div>
+          </form>
+        )}
 
         <div className="mt-10 text-center">
           <div className="text-xs text-gray-500">Helpdesk: 0612224975</div>
@@ -330,12 +412,11 @@ export default function Dashboard() {
 }
 
 /* ---------- Step Renderer ---------- */
-function renderStep(step, form, handleChange, me, steps, nextStep, prevStep, submitApplication) {
-  return (
-        <div>
-      {/* STEP 0 — Personal Information */}
-      {step === 0 && (
-        <>
+function renderStepContent(step, form, handleChange, me, steps, nextStep, prevStep, submitApplication) {
+  switch (step) {
+    case 0:
+      return (
+        <section>
           <h3 className="text-lg font-semibold mb-4" style={{ color: "#372948" }}>
             1. Personal Information / व्यक्तिगत जानकारी
           </h3>
@@ -417,12 +498,11 @@ function renderStep(step, form, handleChange, me, steps, nextStep, prevStep, sub
               />
             )}
           </div>
-        </>
-      )}
-
-      {/* STEP 1 — Additional Details */}
-      {step === 1 && (
-        <>
+        </section>
+      );
+    case 1:
+      return (
+        <section>
           <h3 className="text-lg font-semibold mb-4" style={{ color: "#372948" }}>
             2. Additional Details / अतिरिक्त विवरण
           </h3>
@@ -449,6 +529,7 @@ function renderStep(step, form, handleChange, me, steps, nextStep, prevStep, sub
               required
               name="incomeCert"
               onChange={handleChange}
+              fileValue={form.incomeCert} // Pass fileValue to display selected file name
             />
             <Select
               label="Nationality / नागरिकता*"
@@ -478,12 +559,11 @@ function renderStep(step, form, handleChange, me, steps, nextStep, prevStep, sub
               ]}
             />
           </div>
-        </>
-      )}
-
-      {/* STEP 2 — Contact & Address */}
-      {step === 2 && (
-        <>
+        </section>
+      );
+    case 2:
+      return (
+        <section>
           <h3 className="text-lg font-semibold mb-4" style={{ color: "#372948" }}>
             3. Contact & Address / संपर्क और पता
           </h3>
@@ -522,6 +602,7 @@ function renderStep(step, form, handleChange, me, steps, nextStep, prevStep, sub
               required
               name="residentialCert"
               onChange={handleChange}
+              fileValue={form.residentialCert} // Pass fileValue to display selected file name
             />
 
             <Field
@@ -547,12 +628,11 @@ function renderStep(step, form, handleChange, me, steps, nextStep, prevStep, sub
               onChange={handleChange}
             />
           </div>
-        </>
-      )}
-
-      {/* STEP 3 — Education & Training */}
-      {step === 3 && (
-        <>
+        </section>
+      );
+    case 3:
+      return (
+        <section>
           <h3 className="text-lg font-semibold mb-4" style={{ color: "#372948" }}>
             4. Education & Training / शिक्षा और प्रशिक्षण
           </h3>
@@ -595,6 +675,7 @@ function renderStep(step, form, handleChange, me, steps, nextStep, prevStep, sub
               required
               name="marksheet"
               onChange={handleChange}
+              fileValue={form.marksheet} // Pass fileValue to display selected file name
             />
 
             <RadioGroup
@@ -618,28 +699,36 @@ function renderStep(step, form, handleChange, me, steps, nextStep, prevStep, sub
               />
             )}
           </div>
-        </>
-      )}
-
-      {/* STEP 4 — Uploads & Declaration */}
-      {step === 4 && (
-        <>
+        </section>
+      );
+    case 4:
+      return (
+        <section>
           <h3 className="text-lg font-semibold mb-4" style={{ color: "#372948" }}>
             5. Uploads & Declaration / अपलोड और घोषणा
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FileField
+              label="Income Certificate / आय प्रमाण पत्र*"
+              required
+              name="incomeCert"
+              onChange={handleChange}
+              fileValue={form.incomeCert} // Pass fileValue to display selected file name
+            />
+            <FileField
               label="Upload Signature*"
               required
               name="signature"
               onChange={handleChange}
+              fileValue={form.signature} // Pass fileValue to display selected file name
             />
             <FileField
               label="Candidate Photo*"
               required
               name="photo"
               onChange={handleChange}
+              fileValue={form.photo} // Pass fileValue to display selected file name
             />
 
             <div className="md:col-span-2">
@@ -658,7 +747,7 @@ function renderStep(step, form, handleChange, me, steps, nextStep, prevStep, sub
                   name="selfDeclaration"
                   checked={!!form.selfDeclaration}
                   onChange={handleChange}
-                  className="h-4 w-4"
+                  className="h-4 w-4" // Removed text-indigo-600
                   style={{ accentColor: "#372948" }}
                   aria-label="Self Declaration"
                 />
@@ -684,48 +773,11 @@ function renderStep(step, form, handleChange, me, steps, nextStep, prevStep, sub
               onChange={handleChange}
             />
           </div>
-        </>
-      )}
-
-      {/* Navigation */}
-      <div className="flex justify-between pt-4">
-        {step > 0 ? (
-          <button
-            type="button"
-            onClick={prevStep}
-            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 disabled:opacity-60 transition-all"
-            style={{ border: "1px solid #372948" }}
-          >
-            Previous
-          </button>
-        ) : (
-          <span />
-        )}
-        {step < steps.length - 1 ? (
-          <button
-            type="button"
-            onClick={nextStep}
-            style={{ backgroundColor: "#372948" }}
-            className="text-white px-6 py-2 rounded-full transition-all duration-200 disabled:opacity-60"
-            onMouseEnter={(e) => e.target.style.backgroundColor = "#4a325d"}
-            onMouseLeave={(e) => e.target.style.backgroundColor = "#372948"}
-          >
-            Next Step
-          </button>
-        ) : (
-          <button
-            type="submit"
-            style={{ backgroundColor: "#372948" }}
-            className="text-white px-6 py-2 rounded-full transition-all duration-200 disabled:opacity-60"
-            onMouseEnter={(e) => e.target.style.backgroundColor = "#4a325d"}
-            onMouseLeave={(e) => e.target.style.backgroundColor = "#372948"}
-          >
-            Submit
-          </button>
-        )}
-      </div>
-    </div>
-  );
+        </section>
+      );
+    default:
+      return null;
+  }
 }
 
 /* ---------- UI helpers ---------- */
@@ -735,14 +787,15 @@ function Field({ label, name, value, onChange, type = "text", required = false, 
       <label className="block text-sm font-medium text-gray-700">{label}</label>
       <input
         type={type}
+        id={name} // Added id for accessibility
         name={name}
         value={value}
         onChange={onChange}
         required={required}
         inputMode={inputMode}
         maxLength={maxLength}
-        className="mt-1 block w-full rounded-lg bg-white px-4 py-2 transition-all outline-none"
-        style={{ 
+        className="mt-1 block w-full rounded-lg bg-white px-4 py-2 transition-all outline-none focus:ring-2 focus:ring-[#4a325d]" /* Added focus ring */
+        style={{
           border: "1px solid #372948"
         }}
       />
@@ -755,12 +808,13 @@ function Select({ label, name, value, onChange, options, required = false }) {
     <div>
       <label className="block text-sm font-medium text-gray-700">{label}</label>
       <select
+        id={name} // Added id for accessibility
         name={name}
         value={value}
         onChange={onChange}
         required={required}
-        className="mt-1 block w-full rounded-lg bg-white px-4 py-2 transition-all outline-none"
-        style={{ 
+        className="mt-1 block w-full rounded-lg bg-white px-4 py-2 transition-all outline-none focus:ring-2 focus:ring-[#4a325d]" /* Added focus ring */
+        style={{
           border: "1px solid #372948"
         }}
       >
@@ -783,15 +837,16 @@ function RadioGroup({ label, name, value, onChange, options, required = false })
           <div key={opt.v} className="flex items-center">
             <input
               type="radio"
+              id={`${name}-${opt.v}`} // Unique ID for radio inputs
               name={name}
               value={opt.v}
               checked={value === opt.v}
               onChange={onChange}
               required={required}
-              className="h-4 w-4 outline-none"
+              className="h-4 w-4 border-gray-300 rounded focus:ring-2 focus:ring-[#4a325d]" /* Added focus ring */
               style={{ accentColor: "#372948" }}
             />
-            <span className="ml-2 text-sm">{opt.l}</span>
+            <label htmlFor={`${name}-${opt.v}`} className="ml-2 text-sm text-gray-700">{opt.l}</label>
           </div>
         ))}
       </div>
@@ -804,13 +859,14 @@ function TextArea({ label, name, value, onChange, required = false }) {
     <div>
       <label className="block text-sm font-medium text-gray-700">{label}</label>
       <textarea
+        id={name} // Added id for accessibility
         name={name}
         value={value}
         onChange={onChange}
         required={required}
         rows={3}
-        className="mt-1 block w-full rounded-lg bg-white px-4 py-2 transition-all outline-none"
-        style={{ 
+        className="mt-1 block w-full rounded-lg bg-white px-4 py-2 transition-all outline-none focus:ring-2 focus:ring-[#4a325d]" /* Added focus ring */
+        style={{
           border: "1px solid #372948"
         }}
       />
@@ -824,11 +880,12 @@ function FileField({ label, name, onChange, required = false, fileValue }) {
       <label className="block text-sm font-medium text-gray-700">{label}</label>
       <input
         type="file"
+        id={name} // Added id for accessibility
         name={name}
         onChange={onChange}
         required={required && !fileValue}
-        className="mt-1 block w-full text-sm text-gray-700 rounded-lg px-3 py-2 transition-all outline-none"
-        style={{ 
+        className="mt-1 block w-full text-sm text-gray-700 rounded-lg px-3 py-2 transition-all outline-none focus:ring-2 focus:ring-[#4a325d]" /* Added focus ring */
+        style={{
           border: "1px solid #372948",
           backgroundColor: "white"
         }}

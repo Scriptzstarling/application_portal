@@ -11,7 +11,7 @@ export function clearToken() {
 }
 
 export function api(path, options = {}) {
-  return fetch(`/api${path}`, {
+  return fetch(`/v1${path}`, {
     headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
     credentials: 'include',
     ...options,
