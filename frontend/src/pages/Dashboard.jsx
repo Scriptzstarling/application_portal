@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ReviewApplication from "./ReviewApplication";
-import classNames from 'classnames';
+import { useNavigate } from "react-router-dom";
 
 const steps = [
   { id: 'personal', label: "Personal Information<br/>व्यक्तिगत जानकारी" },
@@ -10,68 +9,343 @@ const steps = [
   { id: 'uploads', label: "Uploads & Declaration<br/>अपलोड और घोषणा" },
 ];
 
+const biharDistricts = [
+  { v: "", l: "Select District" },
+  { v: "Araria", l: "Araria" },
+  { v: "Arwal", l: "Arwal" },
+  { v: "Aurangabad", l: "Aurangabad" },
+  { v: "Banka", l: "Banka" },
+  { v: "Begusarai", l: "Begusarai" },
+  { v: "Bhagalpur", l: "Bhagalpur" },
+  { v: "Bhojpur", l: "Bhojpur" },
+  { v: "Buxar", l: "Buxar" },
+  { v: "Darbhanga", l: "Darbhanga" },
+  { v: "East Champaran", l: "East Champaran" },
+  { v: "Gaya", l: "Gaya" },
+  { v: "Gopalganj", l: "Gopalganj" },
+  { v: "Jamui", l: "Jamui" },
+  { v: "Jehanabad", l: "Jehanabad" },
+  { v: "Kaimur", l: "Kaimur" },
+  { v: "Katihar", l: "Katihar" },
+  { v: "Khagaria", l: "Khagaria" },
+  { v: "Kishanganj", l: "Kishanganj" },
+  { v: "Lakhisarai", l: "Lakhisarai" },
+  { v: "Madhepura", l: "Madhepura" },
+  { v: "Madhubani", l: "Madhubani" },
+  { v: "Munger", l: "Munger" },
+  { v: "Muzaffarpur", l: "Muzaffarpur" },
+  { v: "Nalanda", l: "Nalanda" },
+  { v: "Nawada", l: "Nawada" },
+  { v: "Patna", l: "Patna" },
+  { v: "Purnia", l: "Purnia" },
+  { v: "Rohtas", l: "Rohtas" },
+  { v: "Saharsa", l: "Saharsa" },
+  { v: "Samastipur", l: "Samastipur" },
+  { v: "Saran", l: "Saran" },
+  { v: "Sheikhpura", l: "Sheikhpura" },
+  { v: "Sheohar", l: "Sheohar" },
+  { v: "Sitamarhi", l: "Sitamarhi" },
+  { v: "Siwan", l: "Siwan" },
+  { v: "Supaul", l: "Supaul" },
+  { v: "Vaishali", l: "Vaishali" },
+  { v: "West Champaran", l: "West Champaran" }
+];
+
+// Review Application Component
+function ReviewApplication({ formData, onEdit, onFinalSubmit }) {
+  
+  // Function to show form fields in different ways
+  function renderField(key, value) {
+    // Check if this is a file field
+    const isFileField = key.includes("Cert") || key.includes("marksheet") || key.includes("signature") || key.includes("photo");
+    
+    if (isFileField) {
+      return (
+        <p key={key} className="text-gray-700 mb-1">
+          <strong className="text-gray-900 capitalize">{formatFieldName(key)}:</strong>{" "}
+          {value && value instanceof File ? (
+            <span 
+              className="text-blue-600 underline cursor-pointer hover:text-blue-800 transition-colors"
+              onClick={() => openFileInNewTab(value)}
+              title="Click to view file"
+            >
+              📄 {value.name} (Click to view)
+            </span>
+          ) : value && value.name ? (
+            <span className="text-green-600">
+              📄 {value.name} (File uploaded)
+            </span>
+          ) : (
+            <span className="text-red-600">No file attached</span>
+          )}
+        </p>
+      );
+    }
+    
+    // Check if this is a yes/no field
+    const isBooleanField = key === "handicapped" || key === "selfDeclaration" || key === "domicileBihar";
+    
+    if (isBooleanField) {
+      let displayValue = "No";
+      if (typeof value === 'boolean') {
+        displayValue = value ? 'Yes' : 'No';
+      } else if (value === 'true' || value === 'Yes') {
+        displayValue = 'Yes';
+      }
+      
+      return (
+        <p key={key} className="text-gray-700 mb-1">
+          <strong className="text-gray-900 capitalize">{formatFieldName(key)}:</strong>{" "}
+          {displayValue}
+        </p>
+      );
+    }
+    
+    // Regular text field
+    return (
+      <p key={key} className="text-gray-700 mb-1">
+        <strong className="text-gray-900 capitalize">{formatFieldName(key)}:</strong> {String(value || "N/A")}
+      </p>
+    );
+  }
+
+  // Function to open file in new tab
+  function openFileInNewTab(file) {
+    if (file && file instanceof File) {
+      try {
+        const fileURL = URL.createObjectURL(file);
+        const newWindow = window.open(fileURL, '_blank');
+        
+        if (!newWindow) {
+          alert('Please allow popups to view the file');
+          return;
+        }
+        
+        // Clean up the URL after a delay to free memory
+        setTimeout(() => {
+          URL.revokeObjectURL(fileURL);
+        }, 5000);
+      } catch (error) {
+        console.error('Error opening file:', error);
+        alert('Unable to open file. Please try again.');
+      }
+    }
+  }
+
+  // Function to make field names look better
+  function formatFieldName(fieldName) {
+    const fieldNameMap = {
+      incomeCert: 'Income Certificate',
+      residentialCert: 'Residential Certificate',
+      marksheet: 'Marksheet',
+      signature: 'Signature',
+      photo: 'Photo',
+      applicantName: 'Applicant Name',
+      fatherName: "Father's Name",
+      motherName: "Mother's Name",
+      dob: 'Date of Birth',
+      domicileBihar: 'Domicile of Bihar',
+      choiceDistrict: 'Choice District',
+      jobRoleChoice: 'Job Role Choice',
+      selfDeclaration: 'Self Declaration',
+      previousTraining: 'Previous Training',
+      previousTrainingDetails: 'Previous Training Details'
+    };
+    
+    return fieldNameMap[fieldName] || fieldName.replace(/([A-Z])/g, ' $1').trim();
+  }
+
+  // Group fields by category
+  const categories = {
+    "Personal Details": ["applicantName", "fatherName", "motherName", "dob", "religion", "gender", "handicapped", "disabilityDegree", "aadhar", "income", "nationality", "maritalStatus", "email", "mobile", "telephone"],
+    "Residential Details": ["domicileBihar", "district", "address", "permanentAddress", "residentialCert"],
+    "Application Choices": ["choiceDistrict", "jobRoleChoice", "qualification", "marksheet", "previousTraining", "previousTrainingDetails"],
+    "Declarations & Attachments": ["incomeCert", "signature", "photo", "selfDeclaration", "place", "date"]
+  };
+
+  function handleSubmitButtonHover(e) {
+    e.target.style.backgroundColor = "#372948";
+  }
+
+  function handleSubmitButtonLeave(e) {
+    e.target.style.backgroundColor = "#4a325d";
+  }
+
+  return (
+    <div className="max-w-5xl mx-auto my-6 sm:my-10 bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+      <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Review Your Application</h2>
+      <p className="text-center text-gray-600 mb-8">Please review your application details carefully before final submission. Click on file names to view uploaded documents.</p>
+
+      {Object.entries(categories).map(function([categoryName, keys]) {
+        return (
+          <div key={categoryName} className="mb-8 border-b pb-4 last:border-b-0">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">{categoryName}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {keys.map(function(key) {
+                if (formData[key] !== undefined && formData[key] !== null && formData[key] !== "") {
+                  return renderField(key, formData[key]);
+                }
+                return null;
+              })}
+            </div>
+          </div>
+        );
+      })}
+
+      <div className="flex justify-end gap-4 mt-8">
+        <button
+          onClick={onEdit}
+          className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg text-lg font-semibold shadow-md transition-all duration-200"
+        >
+          Edit Application
+        </button>
+        <button
+          onClick={onFinalSubmit}
+          style={{ backgroundColor: "#4a325d" }}
+          className="hover:bg-opacity-80 text-white px-6 py-3 rounded-lg text-lg font-semibold shadow-md transition-all duration-200"
+          onMouseEnter={handleSubmitButtonHover}
+          onMouseLeave={handleSubmitButtonLeave}
+        >
+          Confirm & Submit
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Main Dashboard Component
 export default function Dashboard() {
   const [step, setstep] = useState(0);
   const [me, setMe] = useState({ mobile: "demo-user" });
   const [message, setMessage] = useState("");
   const [showReviewPage, setShowReviewPage] = useState(false);
 
-  // Load form data from localStorage if available
   const [form, setForm] = useState(() => {
-    const savedForm = localStorage.getItem("applicationForm");
-    return savedForm
-      ? JSON.parse(savedForm)
-      : {
-          applicantName: "",
-          fatherName: "",
-          motherName: "",
-          dob: "",
-          religion: "",
-          gender: "",
-          handicapped: "",
-          disabilityDegree: "",
-
-          aadhar: "",
-          income: "",
-          nationality: "",
-          maritalStatus: "",
-          incomeCert: null,
-
-          email: "",
-          mobile: "",
-          telephone: "",
-          domicileBihar: "",
-          residentialCert: null,
-          district: "",
-          address: "",
-          permanentAddress: "",
-
-          choiceDistrict: "",
-          jobRoleChoice: "",
-          qualification: "",
-          marksheet: null,
-          previousTraining: "",
-          previousTrainingDetails: "",
-
-          signature: null,
-          photo: null,
-          selfDeclaration: false,
-          place: "",
-          date: "",
-        };
+    return {
+      applicantName: "",
+      fatherName: "",
+      motherName: "",
+      dob: "",
+      religion: "",
+      gender: "",
+      handicapped: "",
+      disabilityDegree: "",
+      aadhar: "",
+      income: "",
+      nationality: "",
+      maritalStatus: "",
+      incomeCert: null,
+      email: "",
+      mobile: "",
+      telephone: "",
+      domicileBihar: "",
+      residentialCert: null,
+      district: "",
+      address: "",
+      permanentAddress: "",
+      choiceDistrict: "",
+      jobRoleChoice: "",
+      qualification: "",
+      marksheet: null,
+      previousTraining: "",
+      previousTrainingDetails: "",
+      signature: null,
+      photo: null,
+      selfDeclaration: false,
+      place: "",
+      date: "",
+    };
   });
 
+  const [fieldErrors, setFieldErrors] = useState({});
+  const navigate = useNavigate();
+
   useEffect(() => {
-    // Simulate user loading
     setMe({ mobile: "demo-user" });
   }, []);
 
-  async function loadMe() {
-    setMe({ mobile: "demo-user" });
-  }
-
   function handleChange(e) {
     const { name, value, type, checked, files } = e.target;
+    
+    // Clear previous error for this field
+    setFieldErrors(prev => ({ ...prev, [name]: "" }));
+    
+    // Number-only fields validation
+    const numberOnlyFields = ['aadhar', 'income', 'mobile', 'telephone'];
+    if (numberOnlyFields.includes(name) && value && !/^\d*$/.test(value)) {
+      setFieldErrors(prev => ({ 
+        ...prev, 
+        [name]: `${getFieldDisplayName(name)} should contain only numbers` 
+      }));
+      return;
+    }
+
+    // Real-time Aadhar validation
+    if (name === "aadhar" && value) {
+      if (value.length > 12) {
+        setFieldErrors(prev => ({ 
+          ...prev, 
+          [name]: "Aadhar number should be maximum 12 digits" 
+        }));
+        return;
+      } else if (value.length > 0 && value.length < 12) {
+        setFieldErrors(prev => ({ 
+          ...prev, 
+          [name]: "Aadhar number must be exactly 12 digits" 
+        }));
+      }
+    }
+
+    // Real-time Mobile validation
+    if (name === "mobile" && value) {
+      if (value.length > 10) {
+        setFieldErrors(prev => ({ 
+          ...prev, 
+          [name]: "Mobile number should be maximum 10 digits" 
+        }));
+        return;
+      } else if (value.length > 0 && value.length < 10) {
+        setFieldErrors(prev => ({ 
+          ...prev, 
+          [name]: "Mobile number must be exactly 10 digits" 
+        }));
+      }
+    }
+
+    // Email validation
+    if (name === "email" && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      setFieldErrors(prev => ({ 
+        ...prev, 
+        [name]: "Please enter a valid email address" 
+      }));
+    }
+
+    // File validation
+    if (type === "file" && files && files[0]) {
+      const file = files[0];
+      if (name === "signature" && file.type !== "application/pdf") {
+        setFieldErrors(prev => ({ 
+          ...prev, 
+          [name]: "Please upload PDF file only" 
+        }));
+        return;
+      }
+      if (name === "photo" && !["image/jpeg", "image/jpg", "image/png"].includes(file.type)) {
+        setFieldErrors(prev => ({ 
+          ...prev, 
+          [name]: "Please upload JPG, JPEG or PNG file only" 
+        }));
+        return;
+      }
+      if ((name === "incomeCert" || name === "residentialCert" || name === "marksheet") && file.type !== "application/pdf") {
+        setFieldErrors(prev => ({ 
+          ...prev, 
+          [name]: "Please upload PDF file only" 
+        }));
+        return;
+      }
+    }
+
     setForm((prev) => ({
       ...prev,
       [name]:
@@ -81,6 +355,16 @@ export default function Dashboard() {
           ? files[0] || prev[name]
           : value,
     }));
+  }
+
+  function getFieldDisplayName(fieldName) {
+    const fieldNames = {
+      aadhar: "Aadhar number",
+      income: "Annual income",
+      mobile: "Mobile number",
+      telephone: "Telephone number"
+    };
+    return fieldNames[fieldName] || fieldName;
   }
 
   function goToStep(stepIndex) {
@@ -93,10 +377,6 @@ export default function Dashboard() {
 
   function prevStep() {
     if (step > 0) setstep((s) => s - 1);
-  }
-
-  function logout() {
-    window.location.href = "/login";
   }
 
   function validateBeforeSubmit() {
@@ -112,20 +392,15 @@ export default function Dashboard() {
       income: "Annual Income",
       nationality: "Nationality",
       maritalStatus: "Marital Status",
-      incomeCert: "Income Certificate",
       mobile: "Mobile Number",
       domicileBihar: "Are you domicile/native of Bihar?",
-      residentialCert: "Residential Certificate",
       district: "District Name",
       address: "Address for Correspondence",
       permanentAddress: "Permanent Address",
       choiceDistrict: "Choice of District (MSY)",
       jobRoleChoice: "Job Role",
       qualification: "Highest Educational Qualification",
-      marksheet: "Marksheet of Highest Degree",
       previousTraining: "Previous Training (Yes/No)",
-      signature: "Upload Signature",
-      photo: "Candidate Photo",
       selfDeclaration: "Self Declaration",
       place: "Place",
       date: "Date",
@@ -140,11 +415,21 @@ export default function Dashboard() {
       if (typeof val === "string" && val.trim() === "") {
         return `${required[key]} is required.`;
       }
-      if (val instanceof File && val.size === 0) {
-        return `${required[key]} is required.`;
-      }
     }
 
+    // Additional validations
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      return "Please enter a valid email address.";
+    }
+    if (form.mobile && (!/^\d{10}$/.test(form.mobile))) {
+      return "Mobile number must be exactly 10 digits.";
+    }
+    if (form.aadhar && (!/^\d{12}$/.test(form.aadhar))) {
+      return "Aadhar number must be exactly 12 digits.";
+    }
+    if (form.telephone && form.telephone && !/^\d+$/.test(form.telephone)) {
+      return "Telephone number should contain only digits.";
+    }
     if (form.handicapped === "Yes" && !form.disabilityDegree.trim()) {
       return "Degree of Disability is required when Physically Handicapped is Yes.";
     }
@@ -164,13 +449,11 @@ export default function Dashboard() {
       gender: "",
       handicapped: "",
       disabilityDegree: "",
-
       aadhar: "",
       income: "",
       nationality: "",
       maritalStatus: "",
       incomeCert: null,
-
       email: "",
       mobile: "",
       telephone: "",
@@ -179,14 +462,12 @@ export default function Dashboard() {
       district: "",
       address: "",
       permanentAddress: "",
-
       choiceDistrict: "",
       jobRoleChoice: "",
       qualification: "",
       marksheet: null,
       previousTraining: "",
       previousTrainingDetails: "",
-
       signature: null,
       photo: null,
       selfDeclaration: false,
@@ -206,10 +487,16 @@ export default function Dashboard() {
       return;
     }
 
-    // Simulate successful submission
-    setMessage("Your application has been submitted successfully (simulated)!");
-    resetForm();
-    setShowReviewPage(false);
+    // Confirmation dialog before final submission
+    const isConfirmed = window.confirm("Are you sure you want to finally submit your application? You will not be able to edit it after this.");
+    if (!isConfirmed) {
+      return; // User cancelled submission
+    }
+
+    // Simulate API call and then navigate
+    console.log("Submitting form:", form);
+    // Assuming submission is successful and you get a response/status
+    navigate('/tracker', { state: { applicationData: form, status: 'Submitted' } });
   }
 
   function submitApplication(e) {
@@ -227,120 +514,145 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen p-4 sm:p-6" style={{ background: "linear-gradient(to bottom right, #372948, #241630)" }}>
-      <div className="max-w-5xl mx-auto my-6 sm:my-10 bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+    <div className="min-h-screen p-4 sm:p-6" style={{ backgroundColor: "#372948" }}>
+      <div className="max-w-5xl mx-auto my-6 sm:my-10 bg-white rounded-2xl shadow-2xl p-4 sm:p-6 relative overflow-hidden">
         
-        {/* Progress Steps */}
-        <div className="mb-6">
-          <div className="flex justify-between text-[11px] sm:text-xs md:text-sm font-medium mb-1">
-            {steps.map((s, i) => (
-              <button
-                key={s.id}
-                onClick={() => goToStep(i)}
-                className={classNames(
-                  "cursor-pointer hover:opacity-80 transition-all",
-                  i === step
-                    ? "font-semibold"
-                    : "hover:font-medium"
-                )}
-                style={{ color: i === step ? "#372948" : "#6b7280" }}
-                dangerouslySetInnerHTML={{ __html: s.label }}
-              >
-              </button>
-            ))}
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="h-2 rounded-full transition-all"
-              style={{
-                backgroundColor: "#372948",
-                width: `${((step + 1) / steps.length) * 100}%`
-              }}
-            />
-          </div>
+        {/* Decorative background pattern */}
+        <div className="absolute inset-0 opacity-5 pointer-events-none">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23372948' fill-opacity='0.4'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}></div>
         </div>
-
-        {/* Message Display */}
-        {message && (
-          <div
-            className={`mb-4 rounded-lg px-4 py-3 text-sm border
-            ${message.includes("successfully")
-              ? "bg-green-50 text-green-700 border-green-200"
-              : "bg-amber-50 text-amber-900 border-amber-300"}`}
-            role="alert"
-          >
-            {message}
-          </div>
-        )}
-
-        {/* Form or Review Page */}
-        {showReviewPage ? (
-          <ReviewApplication
-            formData={form}
-            onEdit={handleEdit}
-            onFinalSubmit={finalSubmitApplication}
-          />
-        ) : (
-          <form
-            onSubmit={submitApplication}
-            className="space-y-6 rounded-2xl p-4 sm:p-6"
-            style={{ backgroundColor: "#f8f7fa", border: "1px solid #372948" }}
-          >
-            {steps.map((s, i) => (
-              <div key={s.id} style={{ display: step === i ? 'block' : 'none' }}>
-                {renderStepContent(i, form, handleChange, me, steps, nextStep, prevStep, submitApplication)}
-              </div>
-            ))}
-
-            {/* Navigation Buttons */}
-            <div className="flex justify-between pt-4">
-              {step > 0 ? (
+        
+        <div className="relative z-10">
+          <div className="mb-8">
+            <p className="text-center text-gray-600 text-sm sm:text-base mb-6">
+              Complete all steps to submit your application
+            </p>
+            
+            <div className="flex justify-between text-[11px] sm:text-xs md:text-sm font-medium mb-2">
+              {steps.map((s, i) => (
                 <button
-                  type="button"
-                  onClick={prevStep}
-                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 disabled:opacity-60 transition-all"
-                  style={{ border: "1px solid #372948" }}
+                  key={s.id}
+                  onClick={() => goToStep(i)}
+                  className={`cursor-pointer hover:opacity-80 transition-all duration-300 text-center flex-1 px-1 py-2 rounded-lg mx-1 ${
+                    i === step ? "font-semibold shadow-md" : "hover:font-medium"
+                  }`}
+                  style={{ 
+                    color: i === step ? "#372948" : "#6b7280",
+                    backgroundColor: i === step ? "#f3f0f7" : "transparent",
+                    border: i === step ? "1px solid #372948" : "1px solid transparent"
+                  }}
+                  dangerouslySetInnerHTML={{ __html: s.label }}
                 >
-                  Previous
                 </button>
-              ) : (
-                <span />
-              )}
-              {step < steps.length - 1 ? (
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  style={{ backgroundColor: "#372948" }}
-                  className="text-white px-6 py-2 rounded-full transition-all duration-200 disabled:opacity-60"
-                  onMouseEnter={(e) => e.target.style.backgroundColor = "#4a325d"}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = "#372948"}
-                >
-                  Next Step
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  style={{ backgroundColor: "#372948" }}
-                  className="text-white px-6 py-2 rounded-full transition-all duration-200 disabled:opacity-60"
-                  onMouseEnter={(e) => e.target.style.backgroundColor = "#4a325d"}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = "#4a325d"}
-                >
-                  Submit
-                </button>
-              )}
+              ))}
             </div>
-          </form>
-        )}
+            
+            <div className="w-full bg-gray-200 rounded-full h-3 shadow-inner">
+              <div
+                className="h-3 rounded-full transition-all duration-500 ease-out shadow-sm"
+                style={{
+                  backgroundColor: "#372948",
+                  width: `${((step + 1) / steps.length) * 100}%`,
+                  background: "linear-gradient(90deg, #372948 0%, #4a325d 100%)"
+                }}
+              />
+            </div>
+          </div>
 
-        <div className="mt-10 text-center">
-          <div className="text-xs text-gray-500">Helpdesk: 0612224975</div>
+          {message && (
+            <div
+              className={`mb-6 rounded-xl px-6 py-4 text-sm border shadow-lg animate-pulse
+              ${message.includes("successfully")
+                ? "bg-green-50 text-green-700 border-green-200 shadow-green-100"
+                : "bg-amber-50 text-amber-900 border-amber-300 shadow-amber-100"}`}
+              role="alert"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-2 h-2 rounded-full ${message.includes("successfully") ? "bg-green-500" : "bg-amber-500"}`}></div>
+                {message}
+              </div>
+            </div>
+          )}
+
+          {showReviewPage ? (
+            <ReviewApplication
+              formData={form}
+              onEdit={handleEdit}
+              onFinalSubmit={finalSubmitApplication}
+            />
+          ) : (
+            <form
+              onSubmit={submitApplication}
+              className="space-y-8 rounded-2xl p-6 sm:p-8 shadow-inner"
+              style={{ 
+                backgroundColor: "#f8f7fa", 
+                border: "2px solid #372948",
+                background: "linear-gradient(135deg, #f8f7fa 0%, #f3f0f7 100%)"
+              }}
+            >
+              {steps.map((s, i) => (
+                <div 
+                  key={s.id} 
+                  style={{ display: step === i ? 'block' : 'none' }}
+                  className="animate-fadeIn"
+                >
+                  {renderStepContent(i, form, handleChange, me, steps, nextStep, prevStep, submitApplication, fieldErrors)}
+                </div>
+              ))}
+
+              <div className="flex justify-between pt-6 border-t border-gray-300">
+                {step > 0 ? (
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-full hover:shadow-md disabled:opacity-60 transition-all duration-300 font-medium"
+                    style={{ border: "2px solid #372948" }}
+                  >
+                    ← Previous
+                  </button>
+                ) : (
+                  <span />
+                )}
+                {step < steps.length - 1 ? (
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    style={{ backgroundColor: "#372948" }}
+                    className="text-white px-8 py-3 rounded-full transition-all duration-300 disabled:opacity-60 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                    onMouseEnter={(e) => e.target.style.backgroundColor = "#4a325d"}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = "#372948"}
+                  >
+                    Next Step →
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    style={{ backgroundColor: "#372948" }}
+                    className="text-white px-8 py-3 rounded-full transition-all duration-300 disabled:opacity-60 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                    onMouseEnter={(e) => e.target.style.backgroundColor = "#4a325d"}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = "#4a325d"}
+                  >
+                    Submit Application
+                  </button>
+                )}
+              </div>
+            </form>
+          )}
+
+          <div className="mt-12 text-center border-t border-gray-200 pt-6">
+            <div className="text-xs text-gray-500 bg-gray-50 inline-block px-4 py-2 rounded-full">
+              📞 Helpdesk: 0612224975
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function renderStepContent(step, form, handleChange, me, steps, nextStep, prevStep, submitApplication) {
+function renderStepContent(step, form, handleChange, me, steps, nextStep, prevStep, submitApplication, fieldErrors) {
   switch (step) {
     case 0:
       return (
@@ -386,6 +698,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
               onChange={handleChange}
               options={[
                 { v: "", l: "Select" },
+                { v: "Hindu", l: "Hindu / हिन्दू" },
                 { v: "Islam", l: "Islam / मुस्लिम" },
                 { v: "Christianity", l: "Christianity / इसाई" },
                 { v: "Sikhism", l: "Sikhism / सिख" },
@@ -434,7 +747,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
           <h3 className="text-lg font-semibold mb-4" style={{ color: "#372948" }}>
             2. Additional Details<br/>अतिरिक्त विवरण
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Field
               label="Aadhar Number<br/>आधार संख्या*"
               required
@@ -443,6 +756,8 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
               onChange={handleChange}
               inputMode="numeric"
               maxLength={12}
+              placeholder="Enter 12-digit Aadhar number"
+              error={fieldErrors.aadhar}
             />
             <Field
               label="Annual Income<br/>वार्षिक आय*"
@@ -451,13 +766,17 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
               value={form.income}
               onChange={handleChange}
               inputMode="numeric"
+              placeholder="Enter annual income in numbers"
+              error={fieldErrors.income}
             />
             <FileField
               label="Income Certificate<br/>आय प्रमाण पत्र*"
               required
               name="incomeCert"
               onChange={handleChange}
-              fileValue={form.incomeCert} 
+              fileValue={form.incomeCert}
+              accept=".pdf"
+              error={fieldErrors.incomeCert}
             />
             <Select
               label="Nationality<br/>नागरिकता*"
@@ -496,21 +815,33 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
             3. Contact & Address<br/>संपर्क और पता
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Field label="Email<br/>ई-मेल" name="email" value={form.email} onChange={handleChange} />
+            <Field 
+              label="Email<br/>ई-मेल" 
+              name="email" 
+              type="email"
+              value={form.email} 
+              onChange={handleChange}
+              error={fieldErrors.email}
+            />
             <Field
               label="Mobile Number<br/>मोबाइल नंबर*"
               required
               name="mobile"
               value={form.mobile}
               onChange={handleChange}
-              inputMode="tel"
+              inputMode="numeric"
+              maxLength={10}
+              placeholder="Enter 10-digit mobile number"
+              error={fieldErrors.mobile}
             />
             <Field
               label="Telephone Number with STD Code<br/>टेलीफोन नंबर"
               name="telephone"
               value={form.telephone}
               onChange={handleChange}
-              inputMode="tel"
+              inputMode="numeric"
+              placeholder="Enter telephone number"
+              error={fieldErrors.telephone}
             />
 
             <RadioGroup
@@ -530,15 +861,18 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
               required
               name="residentialCert"
               onChange={handleChange}
-              fileValue={form.residentialCert} 
+              fileValue={form.residentialCert}
+              accept=".pdf"
+              error={fieldErrors.residentialCert}
             />
 
-            <Field
+            <Select
               label="District Name<br/>जिला का नाम*"
               required
               name="district"
               value={form.district}
               onChange={handleChange}
+              options={biharDistricts}
             />
 
             <TextArea
@@ -572,7 +906,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
               value={form.choiceDistrict}
               onChange={handleChange}
               options={[
-                { v: "", l: "Select" },
+                { v: "", l: "Select District" },
                 { v: "District 1", l: "District 1" },
                 { v: "District 2", l: "District 2" },
                 { v: "District 3", l: "District 3" },
@@ -615,11 +949,13 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
               required
               name="marksheet"
               onChange={handleChange}
-              fileValue={form.marksheet} 
+              fileValue={form.marksheet}
+              accept=".pdf"
+              error={fieldErrors.marksheet}
             />
 
             <RadioGroup
-              label="क्या आपने पहले बिहार राज्य अल्पसंख्यक वित्तीय निगम द्वारा प्रायोजित किसी कौशल विकास कार्यक्रम में प्रशिक्षण लिया है?<br/>*"
+              label="Previous Training<br/>पूर्व प्रशिक्षण*"
               required
               name="previousTraining"
               value={form.previousTraining}
@@ -632,7 +968,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
 
             {form.previousTraining === "Yes" && (
               <TextArea
-                label="यदि हाँ, तो उसका विवरण अंकित करें"
+                label="Training Details<br/>प्रशिक्षण का विवरण"
                 name="previousTrainingDetails"
                 value={form.previousTrainingDetails}
                 onChange={handleChange}
@@ -648,40 +984,34 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
             5. Uploads & Declaration<br/>अपलोड और घोषणा
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FileField
-              label="Income Certificate<br/>आय प्रमाण पत्र*"
-              required
-              name="incomeCert"
-              onChange={handleChange}
-              fileValue={form.incomeCert} 
-            />
-            <FileField
-              label="Upload Signature*<br/>"
+              label="Upload Signature<br/>हस्ताक्षर अपलोड करें*"
               required
               name="signature"
               onChange={handleChange}
-              fileValue={form.signature} 
+              fileValue={form.signature}
+              accept=".pdf"
+              error={fieldErrors.signature}
             />
             <FileField
-              label="Candidate Photo*<br/>"
+              label="Candidate Photo<br/>उम्मीदवार की फोटो*"
               required
               name="photo"
               onChange={handleChange}
-              fileValue={form.photo} 
+              fileValue={form.photo}
+              accept=".jpg,.jpeg,.png"
+              error={fieldErrors.photo}
             />
 
-            <div className="md:col-span-3">
-              <p className="text-sm text-gray-800 rounded-lg p-3" style={{ backgroundColor: "#f2ecf8", border: "1px solid #372948" }}>
+            <div className="md:col-span-2">
+              <p className="text-sm text-gray-800 rounded-lg p-3 mb-3" style={{ backgroundColor: "#f2ecf8", border: "1px solid #372948" }}>
                 <strong>Self Declaration / स्व-घोषणा*</strong>
                 <br />
                 मैं घोषणा करता / करती हूँ कि इस आवेदन पत्र में मेरे द्वारा
-                समर्पित सूचना मेरी जानकारी एवं विश्वास में सही है। किसी भी समय
-                मेरे द्वारा दी गयी जानकारी अथवा उसका कोई अंश गलत पाए जाने या
-                कोई प्रासंगिक जानकारी छुपाये जाने का दृष्टांत प्राप्त होने पर
-                मेरा चयन बिना किसी पूर्व सूचना के समाप्त किया जा सकेगा।
+                समर्पित सूचना मेरी जानकारी एवं विश्वास में सही है।
               </p>
-              <div className="mt-3 flex items-center gap-3">
+              <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
                   name="selfDeclaration"
@@ -721,7 +1051,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
 }
 
 // Form field components
-function Field({ label, name, value, onChange, type = "text", required = false, inputMode, maxLength }) {
+function Field({ label, name, value, onChange, type = "text", required = false, inputMode, maxLength, placeholder, error }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700" dangerouslySetInnerHTML={{ __html: label }}></label>
@@ -734,11 +1064,17 @@ function Field({ label, name, value, onChange, type = "text", required = false, 
         required={required}
         inputMode={inputMode}
         maxLength={maxLength}
+        placeholder={placeholder}
         className="mt-1 block w-full rounded-lg bg-white px-4 py-2 transition-all outline-none focus:ring-2 focus:ring-[#4a325d]"
         style={{
-          border: "1px solid #372948"
+          border: error ? "2px solid #dc2626" : "1px solid #372948"
         }}
       />
+      {error && (
+        <div className="text-xs text-red-600 mt-1 bg-red-50 px-2 py-1 rounded border-l-2 border-red-600">
+          {error}
+        </div>
+      )}
     </div>
   );
 }
@@ -754,9 +1090,7 @@ function Select({ label, name, value, onChange, options, required = false }) {
         onChange={onChange}
         required={required}
         className="mt-1 block w-full rounded-lg bg-white px-4 py-2 transition-all outline-none focus:ring-2 focus:ring-[#4a325d]"
-        style={{
-          border: "1px solid #372948"
-        }}
+        style={{ border: "1px solid #372948" }}
       >
         {options.map((opt) => (
           <option key={opt.v} value={opt.v}>
@@ -806,15 +1140,13 @@ function TextArea({ label, name, value, onChange, required = false }) {
         required={required}
         rows={3}
         className="mt-1 block w-full rounded-lg bg-white px-4 py-2 transition-all outline-none focus:ring-2 focus:ring-[#4a325d]"
-        style={{
-          border: "1px solid #372948"
-        }}
+        style={{ border: "1px solid #372948" }}
       />
     </div>
   );
 }
 
-function FileField({ label, name, onChange, required = false, fileValue }) {
+function FileField({ label, name, onChange, required = false, fileValue, accept, error }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700" dangerouslySetInnerHTML={{ __html: label }}></label>
@@ -824,14 +1156,22 @@ function FileField({ label, name, onChange, required = false, fileValue }) {
         name={name}
         onChange={onChange}
         required={required && !fileValue}
+        accept={accept}
         className="mt-1 block w-full text-sm text-gray-700 rounded-lg px-3 py-2 transition-all outline-none focus:ring-2 focus:ring-[#4a325d]"
         style={{
-          border: "1px solid #372948",
+          border: error ? "2px solid #dc2626" : "1px solid #372948",
           backgroundColor: "white"
         }}
       />
+      {error && (
+        <div className="text-xs text-red-600 mt-1 bg-red-50 px-2 py-1 rounded border-l-2 border-red-600">
+          {error}
+        </div>
+      )}
       {fileValue && fileValue.name && (
-        <div className="text-xs text-green-600 mt-1">Selected: {fileValue.name}</div>
+        <div className="text-xs text-green-600 mt-1 bg-green-50 px-2 py-1 rounded border-l-2 border-green-600">
+          ✓ Selected: {fileValue.name}
+        </div>
       )}
     </div>
   );
