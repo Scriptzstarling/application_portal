@@ -1,6 +1,9 @@
 import React from "react";
 
 export default function Footer() {
+  // Get current year for copyright
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="w-full bg-slate-50 border-t border-slate-200 text-center mt-10 px-4 py-6 text-sm text-slate-600">
       <div className="font-medium text-slate-700 mb-1">
@@ -10,7 +13,7 @@ export default function Footer() {
         Training Application Portal – Government of Bihar
       </div>
       <small className="block">
-        &copy; {new Date().getFullYear()} Bihar. All Rights Reserved.
+        &copy; {currentYear} Bihar. All Rights Reserved.
       </small>
     </footer>
   );

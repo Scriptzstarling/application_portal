@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom"; // Import Link
+import { Link } from "react-router-dom"; 
 
 export default function Login() {
   const params = new URLSearchParams(window.location?.search || "");
@@ -13,17 +13,16 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState("");
 
-  const setToken = (token) => {
+  function setToken(token) {
     localStorage.setItem("token", token);
     console.log("Token set:", token);
-  };
+  }
 
-  async function sendOtp() {
+  function sendOtp() {
     setMessage("");
     setLoading(true);
 
-    // Define a constant for the demo mobile number
-    const DEMO_MOBILE = "1234567890"; // Should match the backend's hardcoded demo number
+    const demoNumber = "1234567890"; 
 
     if (!mobile || mobile.trim().length < 10) {
       setMessageType("error");
@@ -32,47 +31,68 @@ export default function Login() {
       return;
     }
 
-    if (mobile.trim() === DEMO_MOBILE) {
-      // Simulate successful demo login without backend call
-      setToken("demo-token-123"); // Set a placeholder token
+    if (mobile.trim() === demoNumber) {
+      setToken("demo-token-123"); 
       setMessageType("success");
       setMessage("Demo login successful! Redirecting...");
       setLoading(false);
-      setTimeout(() => {
+      setTimeout(function() {
         window.location.href = next;
-      }, 1000); // Redirect faster for demo
-      return; // Exit after successful demo login
+      }, 1000);
+      return; 
     }
 
-    // If not a demo number, inform user that backend is needed
     setMessageType("error");
     setMessage("Backend is not running. Only demo login (1234567890) is available.");
     setLoading(false);
-    setStep("enterMobile"); // Stay on mobile entry step
-    return; // Crucial: Exit here if not demo number
+    setStep("enterMobile"); 
+    return; 
   }
 
-  async function verifyOtp() {
+  function verifyOtp() {
     setMessage("");
     setLoading(true);
 
-    // If backend is not running, OTP verification is not possible
     setMessageType("error");
     setMessage("OTP verification requires a running backend. Only demo login (1234567890) is available.");
     setLoading(false);
-    return; // Exit as OTP verification cannot proceed
+    return; 
   }
 
-  const goBack = () => {
+  function goBack() {
     setStep("enterMobile");
     setOtp("");
     setMessage("");
     setUsername("");
-  };
+  }
 
-  const handleKeyPress = (e, action) => {
-    if (e.key === "Enter") action();
-  };
+  function handleEnterKey(e, action) {
+    if (e.key === "Enter") {
+      action();
+    }
+  }
+
+  function handleMobileChange(e) {
+    const value = e.target.value.replace(/[^\d+\-\s()]/g, "");
+    setMobile(value);
+  }
+
+  function handleOtpChange(e) {
+    const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+    setOtp(value);
+  }
+
+  function handleButtonHover(e) {
+    if (!loading) {
+      e.currentTarget.style.backgroundColor = "#4a325d";
+    }
+  }
+
+  function handleButtonLeave(e) {
+    if (!loading) {
+      e.currentTarget.style.backgroundColor = "#5a3e70";
+    }
+  }
 
   return (
     <div
@@ -82,7 +102,6 @@ export default function Login() {
       }}
     >
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-sm p-6">
-        {/* Header */}
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Login</h2>
           <p className="text-sm text-gray-600 mt-1">
@@ -92,7 +111,6 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Message */}
         {message && (
           <div
             className={`mb-4 p-3 rounded-lg text-sm text-center font-medium ${
@@ -105,7 +123,6 @@ export default function Login() {
           </div>
         )}
 
-        {/* Step 1: Enter Mobile */}
         {step === "enterMobile" && (
           <div className="space-y-4">
             <div>
@@ -115,11 +132,8 @@ export default function Login() {
               <input
                 type="tel"
                 value={mobile}
-                onChange={(e) => {
-                  const cleaned = e.target.value.replace(/[^\d+\-\s()]/g, "");
-                  setMobile(cleaned);
-                }}
-                onKeyPress={(e) => handleKeyPress(e, sendOtp)}
+                onChange={handleMobileChange}
+                onKeyPress={(e) => handleEnterKey(e, sendOtp)}
                 placeholder="Enter your mobile number"
                 className="w-full rounded-lg border px-3 py-2 text-sm placeholder-gray-400 
                   focus:outline-none focus:ring-2 focus:ring-[#5a3e70] focus:border-[#5a3e70]"
@@ -134,19 +148,14 @@ export default function Login() {
               style={{
                 backgroundColor: loading ? "#372948" : "#5a3e70",
               }}
-              onMouseEnter={(e) => {
-                if (!loading) e.currentTarget.style.backgroundColor = "#4a325d";
-              }}
-              onMouseLeave={(e) => {
-                if (!loading) e.currentTarget.style.backgroundColor = "#5a3e70";
-              }}
+              onMouseEnter={handleButtonHover}
+              onMouseLeave={handleButtonLeave}
             >
               {loading ? "Sending OTP..." : "Send OTP"}
             </button>
           </div>
         )}
 
-        {/* Step 2: Enter OTP */}
         {step === "enterOtp" && (
           <div className="space-y-4">
             <div
@@ -168,10 +177,8 @@ export default function Login() {
               <input
                 type="text"
                 value={otp}
-                onChange={(e) =>
-                  setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
-                }
-                onKeyPress={(e) => handleKeyPress(e, verifyOtp)}
+                onChange={handleOtpChange}
+                onKeyPress={(e) => handleEnterKey(e, verifyOtp)}
                 placeholder="6-digit OTP"
                 maxLength={6}
                 className="w-full rounded-lg border px-3 py-2 text-lg text-center tracking-widest placeholder-gray-400 
@@ -194,12 +201,8 @@ export default function Login() {
                 style={{
                   backgroundColor: loading ? "#372948" : "#5a3e70",
                 }}
-                onMouseEnter={(e) => {
-                  if (!loading) e.currentTarget.style.backgroundColor = "#4a325d";
-                }}
-                onMouseLeave={(e) => {
-                  if (!loading) e.currentTarget.style.backgroundColor = "#5a3e70";
-                }}
+                onMouseEnter={handleButtonHover}
+                onMouseLeave={handleButtonLeave}
               >
                 {loading ? "Verifying..." : "Verify OTP"}
               </button>
@@ -207,7 +210,6 @@ export default function Login() {
           </div>
         )}
 
-        {/* Footer link */}
         <div className="mt-6 text-center">
           <Link
             to="/register"

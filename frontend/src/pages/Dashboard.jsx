@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-// import { api, getToken, clearToken } from "../lib/api"; // Removed api import
 import ReviewApplication from "./ReviewApplication";
 import classNames from 'classnames';
 
@@ -13,10 +12,11 @@ const steps = [
 
 export default function Dashboard() {
   const [step, setstep] = useState(0);
-  const [me, setMe] = useState({ mobile: "demo-user" }); // Simulate a demo user
+  const [me, setMe] = useState({ mobile: "demo-user" });
   const [message, setMessage] = useState("");
   const [showReviewPage, setShowReviewPage] = useState(false);
 
+  // Load form data from localStorage if available
   const [form, setForm] = useState(() => {
     const savedForm = localStorage.getItem("applicationForm");
     return savedForm
@@ -62,26 +62,12 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    // const token = getToken(); // Removed getToken call
-    // if (token) {
-    //   loadMe();
-    // }
-    // No backend for now, so no need to load user data from backend
+    // Simulate user loading
+    setMe({ mobile: "demo-user" });
   }, []);
 
   async function loadMe() {
-    // const token = getToken(); // Removed getToken call
-    // if (!token) return;
-    
-    // try {
-    //   const res = await api("/auth/me", { // Removed API call
-    //     headers: { Authorization: `Bearer ${getToken()}` },
-    //   });
-    //   setMe(res);
-    // } catch (e) {
-    //   setMessage(e.message || "Failed to load user");
-    // }
-    setMe({ mobile: "demo-user" }); // Always simulate a demo user
+    setMe({ mobile: "demo-user" });
   }
 
   function handleChange(e) {
@@ -110,7 +96,6 @@ export default function Dashboard() {
   }
 
   function logout() {
-    // clearToken(); // Removed clearToken call
     window.location.href = "/login";
   }
 
@@ -221,39 +206,8 @@ export default function Dashboard() {
       return;
     }
 
-    // const token = getToken(); // Removed getToken call
-    // if (!token) {
-    //   setMessage("Please login to submit application.");
-    //   return;
-    // }
-
-    // try {
-    //   const formData = new FormData();
-    //   Object.entries(form).forEach(([k, v]) => {
-    //     if (v instanceof File) {
-    //       formData.append(k, v);
-    //     } else if (v !== null && v !== undefined && v !== "") {
-    //       formData.append(k, v);
-    //     }
-    //   });
-
-    //   const response = await api("/applications", { // Removed API call
-    //     method: "POST",
-    //     headers: { Authorization: `Bearer ${token}` },
-    //     body: formData,
-    //   });
-
-    //   setMessage("Your application has been submitted successfully!");
-    //   resetForm();
-    //   setShowReviewPage(false);
-    // } catch (e) {
-    //   if (e.response) {
-    //     setMessage(`Submission failed: ${e.response.message || e.response.error || e.message}`);
-    //   } else {
-    //     setMessage(e.message || "Submission failed.");
-    //   }
-    // }
-    setMessage("Your application has been submitted successfully (simulated)!"); // Simulate success
+    // Simulate successful submission
+    setMessage("Your application has been submitted successfully (simulated)!");
     resetForm();
     setShowReviewPage(false);
   }
@@ -275,12 +229,8 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen p-4 sm:p-6" style={{ background: "linear-gradient(to bottom right, #372948, #241630)" }}>
       <div className="max-w-5xl mx-auto my-6 sm:my-10 bg-white rounded-2xl shadow-lg p-4 sm:p-6">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          {/* Removed Dashboard header */}
-        </div>
-
-        {/* Progress - Clickable Steps */}
+        
+        {/* Progress Steps */}
         <div className="mb-6">
           <div className="flex justify-between text-[11px] sm:text-xs md:text-sm font-medium mb-1">
             {steps.map((s, i) => (
@@ -310,6 +260,7 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Message Display */}
         {message && (
           <div
             className={`mb-4 rounded-lg px-4 py-3 text-sm border
@@ -322,6 +273,7 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Form or Review Page */}
         {showReviewPage ? (
           <ReviewApplication
             formData={form}
@@ -334,16 +286,13 @@ export default function Dashboard() {
             className="space-y-6 rounded-2xl p-4 sm:p-6"
             style={{ backgroundColor: "#f8f7fa", border: "1px solid #372948" }}
           >
-            {
-              // Render all steps, but only display the current one
-              steps.map((s, i) => (
-                <div key={s.id} style={{ display: step === i ? 'block' : 'none' }}>
-                  {renderStepContent(i, form, handleChange, me, steps, nextStep, prevStep, submitApplication)}
-                </div>
-              ))
-            }
+            {steps.map((s, i) => (
+              <div key={s.id} style={{ display: step === i ? 'block' : 'none' }}>
+                {renderStepContent(i, form, handleChange, me, steps, nextStep, prevStep, submitApplication)}
+              </div>
+            ))}
 
-            {/* Navigation */}
+            {/* Navigation Buttons */}
             <div className="flex justify-between pt-4">
               {step > 0 ? (
                 <button
@@ -391,7 +340,6 @@ export default function Dashboard() {
   );
 }
 
-/* ---------- Step Renderer ---------- */
 function renderStepContent(step, form, handleChange, me, steps, nextStep, prevStep, submitApplication) {
   switch (step) {
     case 0:
@@ -509,7 +457,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
               required
               name="incomeCert"
               onChange={handleChange}
-              fileValue={form.incomeCert} // Pass fileValue to display selected file name
+              fileValue={form.incomeCert} 
             />
             <Select
               label="Nationality<br/>नागरिकता*"
@@ -582,7 +530,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
               required
               name="residentialCert"
               onChange={handleChange}
-              fileValue={form.residentialCert} // Pass fileValue to display selected file name
+              fileValue={form.residentialCert} 
             />
 
             <Field
@@ -617,19 +565,31 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
             4. Education & Training<br/>शिक्षा और प्रशिक्षण
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Field
+            <Select
               label="Choice of District (MSY)<br/>कौशल प्रशिक्षण कार्यक्रम हेतु जिला का चुनाव*"
               required
               name="choiceDistrict"
               value={form.choiceDistrict}
               onChange={handleChange}
+              options={[
+                { v: "", l: "Select" },
+                { v: "District 1", l: "District 1" },
+                { v: "District 2", l: "District 2" },
+                { v: "District 3", l: "District 3" },
+              ]}
             />
-            <Field
+            <Select
               label="Job Role<br/>जॉब रोल*"
               required
               name="jobRoleChoice"
               value={form.jobRoleChoice}
               onChange={handleChange}
+              options={[
+                { v: "", l: "Select" },
+                { v: "Job Role 1", l: "Job Role 1" },
+                { v: "Job Role 2", l: "Job Role 2" },
+                { v: "Job Role 3", l: "Job Role 3" },
+              ]}
             />
 
             <Select
@@ -655,7 +615,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
               required
               name="marksheet"
               onChange={handleChange}
-              fileValue={form.marksheet} // Pass fileValue to display selected file name
+              fileValue={form.marksheet} 
             />
 
             <RadioGroup
@@ -694,21 +654,21 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
               required
               name="incomeCert"
               onChange={handleChange}
-              fileValue={form.incomeCert} // Pass fileValue to display selected file name
+              fileValue={form.incomeCert} 
             />
             <FileField
               label="Upload Signature*<br/>"
               required
               name="signature"
               onChange={handleChange}
-              fileValue={form.signature} // Pass fileValue to display selected file name
+              fileValue={form.signature} 
             />
             <FileField
               label="Candidate Photo*<br/>"
               required
               name="photo"
               onChange={handleChange}
-              fileValue={form.photo} // Pass fileValue to display selected file name
+              fileValue={form.photo} 
             />
 
             <div className="md:col-span-3">
@@ -727,7 +687,7 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
                   name="selfDeclaration"
                   checked={!!form.selfDeclaration}
                   onChange={handleChange}
-                  className="h-4 w-4" // Removed text-indigo-600
+                  className="h-4 w-4" 
                   style={{ accentColor: "#372948" }}
                   aria-label="Self Declaration"
                 />
@@ -760,21 +720,21 @@ function renderStepContent(step, form, handleChange, me, steps, nextStep, prevSt
   }
 }
 
-/* ---------- UI helpers ---------- */
+// Form field components
 function Field({ label, name, value, onChange, type = "text", required = false, inputMode, maxLength }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700" dangerouslySetInnerHTML={{ __html: label }}></label>
       <input
         type={type}
-        id={name} // Added id for accessibility
+        id={name} 
         name={name}
         value={value}
         onChange={onChange}
         required={required}
         inputMode={inputMode}
         maxLength={maxLength}
-        className="mt-1 block w-full rounded-lg bg-white px-4 py-2 transition-all outline-none focus:ring-2 focus:ring-[#4a325d]" /* Added focus ring */
+        className="mt-1 block w-full rounded-lg bg-white px-4 py-2 transition-all outline-none focus:ring-2 focus:ring-[#4a325d]"
         style={{
           border: "1px solid #372948"
         }}
@@ -788,12 +748,12 @@ function Select({ label, name, value, onChange, options, required = false }) {
     <div>
       <label className="block text-sm font-medium text-gray-700" dangerouslySetInnerHTML={{ __html: label }}></label>
       <select
-        id={name} // Added id for accessibility
+        id={name} 
         name={name}
         value={value}
         onChange={onChange}
         required={required}
-        className="mt-1 block w-full rounded-lg bg-white px-4 py-2 transition-all outline-none focus:ring-2 focus:ring-[#4a325d]" /* Added focus ring */
+        className="mt-1 block w-full rounded-lg bg-white px-4 py-2 transition-all outline-none focus:ring-2 focus:ring-[#4a325d]"
         style={{
           border: "1px solid #372948"
         }}
@@ -817,13 +777,13 @@ function RadioGroup({ label, name, value, onChange, options, required = false })
           <div key={opt.v} className="flex items-center">
             <input
               type="radio"
-              id={`${name}-${opt.v}`} // Unique ID for radio inputs
+              id={`${name}-${opt.v}`} 
               name={name}
               value={opt.v}
               checked={value === opt.v}
               onChange={onChange}
               required={required}
-              className="h-4 w-4 border-gray-300 rounded focus:ring-2 focus:ring-[#4a325d]" /* Added focus ring */
+              className="h-4 w-4 border-gray-300 rounded focus:ring-2 focus:ring-[#4a325d]"
               style={{ accentColor: "#372948" }}
             />
             <label htmlFor={`${name}-${opt.v}`} className="ml-2 text-sm text-gray-700">{opt.l}</label>
@@ -839,13 +799,13 @@ function TextArea({ label, name, value, onChange, required = false }) {
     <div>
       <label className="block text-sm font-medium text-gray-700" dangerouslySetInnerHTML={{ __html: label }}></label>
       <textarea
-        id={name} // Added id for accessibility
+        id={name} 
         name={name}
         value={value}
         onChange={onChange}
         required={required}
         rows={3}
-        className="mt-1 block w-full rounded-lg bg-white px-4 py-2 transition-all outline-none focus:ring-2 focus:ring-[#4a325d]" /* Added focus ring */
+        className="mt-1 block w-full rounded-lg bg-white px-4 py-2 transition-all outline-none focus:ring-2 focus:ring-[#4a325d]"
         style={{
           border: "1px solid #372948"
         }}
@@ -860,11 +820,11 @@ function FileField({ label, name, onChange, required = false, fileValue }) {
       <label className="block text-sm font-medium text-gray-700" dangerouslySetInnerHTML={{ __html: label }}></label>
       <input
         type="file"
-        id={name} // Added id for accessibility
+        id={name} 
         name={name}
         onChange={onChange}
         required={required && !fileValue}
-        className="mt-1 block w-full text-sm text-gray-700 rounded-lg px-3 py-2 transition-all outline-none focus:ring-2 focus:ring-[#4a325d]" /* Added focus ring */
+        className="mt-1 block w-full text-sm text-gray-700 rounded-lg px-3 py-2 transition-all outline-none focus:ring-2 focus:ring-[#4a325d]"
         style={{
           border: "1px solid #372948",
           backgroundColor: "white"

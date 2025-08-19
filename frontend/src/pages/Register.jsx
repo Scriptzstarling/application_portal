@@ -8,7 +8,7 @@ export default function Register() {
   const [messageType, setMessageType] = useState("error");
   const [loading, setLoading] = useState(false);
 
-  async function sendOtp(e) {
+  function sendOtp(e) {
     e.preventDefault();
     setMessage("");
     setLoading(true);
@@ -23,32 +23,52 @@ export default function Register() {
     setMessageType("error");
     setMessage("Registration is not available without a running backend.");
     setLoading(false);
-    return; // Exit as registration cannot proceed
+    return;
   }
 
-  async function verifyOtp(e) {
+  function verifyOtp(e) {
     e.preventDefault();
     setMessage("");
     setLoading(true);
 
-    // If backend is not running, OTP verification is not possible
     setMessageType("error");
     setMessage("OTP verification for registration requires a running backend.");
     setLoading(false);
-    return; // Exit as OTP verification cannot proceed
+    return;
   }
 
-  const goBack = () => {
+  function goBack() {
     setStep("enterMobile");
     setOtp("");
     setMessage("");
-  };
+  }
+
+  function handleMobileChange(e) {
+    const value = e.target.value.replace(/[^\d+\-\s()]/g, "");
+    setMobile(value);
+  }
+
+  function handleOtpChange(e) {
+    const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+    setOtp(value);
+  }
+
+  function handleButtonHover(e) {
+    if (!loading) {
+      e.currentTarget.style.backgroundColor = "#4a325d";
+    }
+  }
+
+  function handleButtonLeave(e) {
+    if (!loading) {
+      e.currentTarget.style.backgroundColor = "#5a3e70";
+    }
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-3 sm:px-4 py-6"
          style={{ background: "linear-gradient(to bottom right, #372948, #241630)" }}>
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg w-full max-w-xs sm:max-w-sm p-5 sm:p-6">
-        {/* Header */}
         <div className="text-center mb-5">
           <h2 className="text-lg sm:text-2xl font-bold text-gray-800 mb-1">
             Register
@@ -58,7 +78,6 @@ export default function Register() {
           </p>
         </div>
 
-        {/* Message */}
         {message && (
           <div
             className={`mb-4 p-2.5 rounded-lg text-xs sm:text-sm text-center font-medium ${
@@ -71,7 +90,6 @@ export default function Register() {
           </div>
         )}
 
-        {/* Step 1: Enter Mobile */}
         {step === "enterMobile" && (
           <form onSubmit={sendOtp} className="space-y-3">
             <div>
@@ -81,10 +99,7 @@ export default function Register() {
               <input
                 type="tel"
                 value={mobile}
-                onChange={(e) => {
-                  const cleaned = e.target.value.replace(/[^\d+\-\s()]/g, "");
-                  setMobile(cleaned);
-                }}
+                onChange={handleMobileChange}
                 placeholder="Enter your mobile number"
                 className="w-full rounded-lg border px-3 py-2 text-sm placeholder-gray-400 
                   focus:outline-none focus:ring-2 focus:ring-[#5a3e70] focus:border-[#5a3e70]"
@@ -100,19 +115,14 @@ export default function Register() {
               style={{
                 backgroundColor: loading ? "#372948" : "#5a3e70",
               }}
-              onMouseEnter={(e) => {
-                if (!loading) e.currentTarget.style.backgroundColor = "#4a325d";
-              }}
-              onMouseLeave={(e) => {
-                if (!loading) e.currentTarget.style.backgroundColor = "#5a3e70";
-              }}
+              onMouseEnter={handleButtonHover}
+              onMouseLeave={handleButtonLeave}
             >
               {loading ? "Sending OTP..." : "Send OTP"}
             </button>
           </form>
         )}
 
-        {/* Step 2: Enter OTP */}
         {step === "enterOtp" && (
           <form onSubmit={verifyOtp} className="space-y-3">
             <div
@@ -129,9 +139,7 @@ export default function Register() {
               <input
                 type="text"
                 value={otp}
-                onChange={(e) =>
-                  setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
-                }
+                onChange={handleOtpChange}
                 placeholder="6-digit OTP"
                 maxLength={6}
                 className="w-full rounded-lg border bg-gray-50 px-3 py-2 text-lg text-center tracking-widest placeholder-gray-400 focus:outline-none focus:ring-2 focus:bg-white"
@@ -164,7 +172,6 @@ export default function Register() {
           </form>
         )}
 
-        {/* Footer Link */}
         <div className="mt-5 text-center">
           <a
             href="/login"

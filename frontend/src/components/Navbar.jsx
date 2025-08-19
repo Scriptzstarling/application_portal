@@ -1,22 +1,65 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { getToken, clearToken } from "../lib/api"; // Import getToken and clearToken
+import { getToken, clearToken } from "../lib/api";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(!!getToken()); // Track login status
+  
+  // Check if user is logged in
+  const token = getToken();
+  const isLoggedIn = !!token;
+  const [userLoggedIn, setUserLoggedIn] = useState(isLoggedIn);
 
-  // Function to handle logout
-  const handleLogout = () => {
+  function handleLogout() {
     clearToken();
-    setIsLoggedIn(false);
-    window.location.href = "/login"; // Redirect to login page
-  };
+    setUserLoggedIn(false);
+    window.location.href = "/login";
+  }
+
+  function toggleMobileMenu() {
+    setOpen(!open);
+  }
+
+  function handleDesktopRegisterHover(e) {
+    e.target.style.color = "#372948";
+  }
+
+  function handleDesktopRegisterLeave(e) {
+    e.target.style.color = "#6b7280";
+  }
+
+  function handleDesktopLoginHover(e) {
+    e.target.style.color = "#372948";
+  }
+
+  function handleDesktopLoginLeave(e) {
+    e.target.style.color = "#6b7280";
+  }
+
+  function handleMobileRegisterHover(e) {
+    e.target.style.color = "#372948";
+  }
+
+  function handleMobileRegisterLeave(e) {
+    e.target.style.color = "#1f2937";
+  }
+
+  function handleMobileLoginHover(e) {
+    e.target.style.color = "#372948";
+  }
+
+  function handleMobileLoginLeave(e) {
+    e.target.style.color = "#1f2937";
+  }
+
+  function handleMobileLogout() {
+    handleLogout();
+    setOpen(false);
+  }
 
   return (
     <nav className="bg-white shadow border-b border-gray-200 px-4 sm:px-6 py-3 sticky top-0 z-50">
       <div className="flex items-center justify-between">
-        {/* Brand Title */}
         <div className="font-semibold text-lg text-gray-900 leading-tight">
           Mukhyamantri Shram Shakti Yojna{" "}
           <br className="hidden sm:block" />
@@ -25,9 +68,8 @@ export default function Navbar() {
           </span>
         </div>
 
-        {/* Right cluster on desktop */}
         <div className="hidden sm:flex items-center gap-6 text-sm font-medium">
-          {isLoggedIn ? (
+          {userLoggedIn ? (
             <button
               onClick={handleLogout}
               className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all duration-200"
@@ -41,8 +83,8 @@ export default function Navbar() {
                 style={{
                   color: "#6b7280"
                 }}
-                onMouseEnter={(e) => e.target.style.color = "#372948"}
-                onMouseLeave={(e) => e.target.style.color = "#6b7280"}
+                onMouseEnter={handleDesktopRegisterHover}
+                onMouseLeave={handleDesktopRegisterLeave}
                 to="/register"
               >
                 Register
@@ -52,8 +94,8 @@ export default function Navbar() {
                 style={{
                   color: "#6b7280"
                 }}
-                onMouseEnter={(e) => e.target.style.color = "#372948"}
-                onMouseLeave={(e) => e.target.style.color = "#6b7280"}
+                onMouseEnter={handleDesktopLoginHover}
+                onMouseLeave={handleDesktopLoginLeave}
                 to="/login"
               >
                 Login
@@ -62,14 +104,12 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile menu button */}
         <button
           className="sm:hidden inline-flex items-center justify-center rounded-md p-2 text-gray-600 hover:bg-gray-100 focus:outline-none"
           aria-label="Toggle menu"
-          onClick={() => setOpen((o) => !o)}
+          onClick={toggleMobileMenu}
         >
           {open ? (
-            // X (Close) icon
             <svg
               className="h-6 w-6"
               fill="none"
@@ -84,7 +124,6 @@ export default function Navbar() {
               />
             </svg>
           ) : (
-            // Hamburger icon
             <svg
               className="h-6 w-6"
               fill="none"
@@ -102,16 +141,12 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile dropdown */}
       {open && (
         <div className="sm:hidden mt-3 border-t border-gray-200 pt-3">
           <div className="flex flex-col gap-2 text-sm font-medium">
-            {isLoggedIn ? (
+            {userLoggedIn ? (
               <button
-                onClick={() => {
-                  handleLogout();
-                  setOpen(false); // Close mobile menu after logout
-                }}
+                onClick={handleMobileLogout}
                 className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all duration-200 w-full text-left"
               >
                 Logout
@@ -119,21 +154,21 @@ export default function Navbar() {
             ) : (
               <>
                 <Link
-  className="text-gray-800 text-base font-semibold transition-colors"
-  onMouseEnter={(e) => (e.target.style.color = "#372948")}
-  onMouseLeave={(e) => (e.target.style.color = "#1f2937")} 
-  to="/register"
->
-  Register
-</Link>
-<Link
-  className="text-gray-800 text-base font-semibold transition-colors"
-  onMouseEnter={(e) => (e.target.style.color = "#372948")}
-  onMouseLeave={(e) => (e.target.style.color = "#1f2937")}
-  to="/login"
->
-  Login
-</Link>
+                  className="text-gray-800 text-base font-semibold transition-colors"
+                  onMouseEnter={handleMobileRegisterHover}
+                  onMouseLeave={handleMobileRegisterLeave}
+                  to="/register"
+                >
+                  Register
+                </Link>
+                <Link
+                  className="text-gray-800 text-base font-semibold transition-colors"
+                  onMouseEnter={handleMobileLoginHover}
+                  onMouseLeave={handleMobileLoginLeave}
+                  to="/login"
+                >
+                  Login
+                </Link>
               </>
             )}
           </div>
