@@ -119,29 +119,21 @@ export default function Navbar() {
             ) : (
               <>
                 <Link
-                  className="text-gray-700 transition-colors py-2"
-                  style={{
-                    color: "#6b7280"
-                  }}
-                  onMouseEnter={(e) => e.target.style.color = "#372948"}
-                  onMouseLeave={(e) => e.target.style.color = "#6b7280"}
-                  to="/register"
-                  onClick={() => setOpen(false)}
-                >
-                  Register
-                </Link>
-                <Link
-                  className="text-gray-700 transition-colors py-2"
-                  style={{
-                    color: "#6b7280"
-                  }}
-                  onMouseEnter={(e) => e.target.style.color = "#372948"}
-                  onMouseLeave={(e) => e.target.style.color = "#6b7280"}
-                  to="/login"
-                  onClick={() => setOpen(false)}
-                >
-                  Login
-                </Link>
+  className="text-gray-800 text-base font-semibold transition-colors"
+  onMouseEnter={(e) => (e.target.style.color = "#372948")}
+  onMouseLeave={(e) => (e.target.style.color = "#1f2937")} 
+  to="/register"
+>
+  Register
+</Link>
+<Link
+  className="text-gray-800 text-base font-semibold transition-colors"
+  onMouseEnter={(e) => (e.target.style.color = "#372948")}
+  onMouseLeave={(e) => (e.target.style.color = "#1f2937")}
+  to="/login"
+>
+  Login
+</Link>
               </>
             )}
           </div>
