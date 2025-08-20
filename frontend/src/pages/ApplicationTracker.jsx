@@ -57,13 +57,6 @@ function ApplicationTracker() {
           <div className="p-6">
             {applicationData && Object.keys(applicationData).length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-[#372948] rounded-full mt-2"></div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">Application ID</p>
-                    <p className="text-lg font-semibold text-gray-900">{applicationData.applicationId || 'N/A'}</p>
-                  </div>
-                </div>
                 
                 <div className="flex items-start space-x-3">
                   <div className="w-2 h-2 bg-[#372948] rounded-full mt-2"></div>
@@ -137,7 +130,7 @@ function ApplicationTracker() {
               ></div>
 
               <div className="flex justify-between relative z-10">
-                {stages.map((index, stage) => {
+                {stages.map((stage, index) => {
                   const isCompleted = index < currentStageIndex;
                   const isCurrent = index === currentStageIndex;
                   const isActive = index <= currentStageIndex;
@@ -149,8 +142,7 @@ function ApplicationTracker() {
                           ${isActive 
                             ? 'bg-[#372948] border-[#372948] transform scale-110' 
                             : 'bg-gray-300 border-gray-300'
-                          }`
-                        }
+                          }`}
                       >
                         {getStageIcon(stage, isCompleted, isCurrent)}
                       </div>
@@ -201,14 +193,6 @@ function ApplicationTracker() {
               <div>
                 <p className="font-semibold">Helpdesk Support</p>
                 <p className="text-sm text-gray-600">0612224975</p>
-              </div>
-            </div>
-            <div className="h-12 w-px bg-gray-300"></div>
-            <div className="flex items-center space-x-2 text-[#372948]">
-              <Clock className="w-4 h-4" />
-              <div>
-                <p className="font-semibold">Office Hours</p>
-                <p className="text-sm text-gray-600">Mon-Fri: 9:00 AM - 5:00 PM</p>
               </div>
             </div>
           </div>

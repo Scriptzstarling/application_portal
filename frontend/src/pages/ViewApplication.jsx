@@ -27,30 +27,47 @@ const ViewApplication = () => {
     );
   }
 
+  // --- THIS FUNCTION IS UPDATED TO FORCE EVERYTHING ON ONE PAGE ---
   const handleDownloadPdf = () => {
     const input = pdfRef.current;
-    html2canvas(input, { scale: 2 }).then((canvas) => {
+    if (!input) return;
+
+    // Use a higher scale for better image quality
+    html2canvas(input, { scale: 2, useCORS: true }).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4', true);
+      
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
+      
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 15;
+      
+      // Calculate the ratio to fit the image within the page, subtracting margins
+      // We leave a 20mm margin (10mm top, 10mm bottom)
+      const ratio = Math.min((pdfWidth - 10) / imgWidth, (pdfHeight - 20) / imgHeight);
+      
+      const finalImgWidth = imgWidth * ratio;
+      const finalImgHeight = imgHeight * ratio;
+
+      // Center the image on the page
+      const imgX = (pdfWidth - finalImgWidth) / 2;
+      const imgY = 15; // 15mm margin from the top
+
+      // Add the header text
       pdf.setFontSize(16);
       pdf.text("Mukhyamantri Shram Shakti Yojna - Application", pdfWidth / 2, 10, { align: 'center' });
-      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      
+      // Add the single, scaled image to the PDF
+      pdf.addImage(imgData, 'PNG', imgX, imgY, finalImgWidth, finalImgHeight);
+      
       pdf.save(`application-${applicationData.applicantName}.pdf`);
     });
   };
   
-  // NOTE: The renderField, formatFieldName, and categories object are the same as in 
-  // ReviewApplication.jsx and are omitted here for brevity. They should be included.
-   // Function to show form fields in different ways
-   function renderField(key, value) {
-    // Check if this is a file field
+  // The rest of the component remains the same.
+  // Included here for completeness.
+  function renderField(key, value) {
     const isFileField = key.includes("Cert") || key.includes("marksheet") || 
                        key.includes("signature") || key.includes("photo");
     
@@ -75,7 +92,6 @@ const ViewApplication = () => {
       );
     }
     
-    // Format boolean fields
     const isBooleanField = ["handicapped", "selfDeclaration", "domicileBihar"].includes(key);
     if (isBooleanField) {
       const displayValue = typeof value === 'boolean' ? (value ? 'Yes' : 'No') : 
@@ -88,7 +104,6 @@ const ViewApplication = () => {
       );
     }
     
-    // Regular text fields
     return (
       <div key={key} className="bg-gray-50 rounded-lg px-4 py-3 border border-gray-200">
         <span className="font-medium text-gray-700">{formatFieldName(key)}</span>
@@ -97,7 +112,6 @@ const ViewApplication = () => {
     );
   }
 
-  // Function to format field names for display
   function formatFieldName(fieldName) {
     const fieldNameMap = {
       incomeCert: 'Income Certificate',
@@ -119,7 +133,6 @@ const ViewApplication = () => {
     return fieldNameMap[fieldName] || fieldName.replace(/([A-Z])/g, ' $1').trim();
   }
 
-  // Group fields into categories for structured display
   const categories = {
     "Personal Details": ["applicantName", "fatherName", "motherName", "dob", "religion", 
                         "gender", "handicapped", "disabilityDegree"],
